@@ -368,6 +368,34 @@
   .feedback.unsure { background: var(--unsure-bg); color: var(--unsure); display: block; }
   .feedback.reveal { background: var(--accent-bg); color: var(--accent); display: block; font-family: var(--mono); }
 
+  /* ── Math Button Bar ── */
+  .math-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 8px 0;
+  }
+
+  .math-btn {
+    padding: 8px 14px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .math-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
+  .math-btn:active { background: var(--accent-light); transform: scale(0.96); }
+
   /* ── Input ── */
   .input-area {
     display: flex;
@@ -525,6 +553,20 @@
 
   <div class="setup-section">
     <label>Problems</label>
+    <div class="math-buttons" id="setup-math-buttons">
+      <button class="math-btn" onclick="insertSetup('x')" title="variable x">x</button>
+      <button class="math-btn" onclick="insertSetup('y')" title="variable y">y</button>
+      <button class="math-btn" onclick="insertSetup('²')" title="squared">²</button>
+      <button class="math-btn" onclick="insertSetup('³')" title="cubed">³</button>
+      <button class="math-btn" onclick="insertSetup('^')" title="power of">^</button>
+      <button class="math-btn" onclick="insertSetup('√')" title="square root">√</button>
+      <button class="math-btn" onclick="insertSetup('(')" title="open bracket">(</button>
+      <button class="math-btn" onclick="insertSetup(')')" title="close bracket">)</button>
+      <button class="math-btn" onclick="insertSetup(' + ')" title="plus">+</button>
+      <button class="math-btn" onclick="insertSetup(' - ')" title="minus">−</button>
+      <button class="math-btn" onclick="insertSetup(' × ')" title="times">×</button>
+      <button class="math-btn" onclick="insertSetup('/')" title="divide">/</button>
+    </div>
     <textarea id="problems-input" placeholder="Q: Expand 3(2x + 5)
 A: 6x + 15
 
@@ -587,6 +629,21 @@ A: 10x - 6"></textarea>
     <span>Checking your step...</span>
   </div>
 
+  <div class="math-buttons" id="math-buttons">
+    <button class="math-btn" onclick="insertMath('x')" title="variable x">x</button>
+    <button class="math-btn" onclick="insertMath('y')" title="variable y">y</button>
+    <button class="math-btn" onclick="insertMath('²')" title="squared">²</button>
+    <button class="math-btn" onclick="insertMath('³')" title="cubed">³</button>
+    <button class="math-btn" onclick="insertMath('^')" title="power of">^</button>
+    <button class="math-btn" onclick="insertMath('√')" title="square root">√</button>
+    <button class="math-btn" onclick="insertMath('(')" title="open bracket">(</button>
+    <button class="math-btn" onclick="insertMath(')')" title="close bracket">)</button>
+    <button class="math-btn" onclick="insertMath(' + ')" title="plus">+</button>
+    <button class="math-btn" onclick="insertMath(' - ')" title="minus">−</button>
+    <button class="math-btn" onclick="insertMath(' × ')" title="times">×</button>
+    <button class="math-btn" onclick="insertMath('/')" title="divide">/</button>
+  </div>
+
   <div class="input-area" id="input-area">
     <input type="text" id="step-input" placeholder="Type your next step..." autocomplete="off" />
     <button id="submit-step" onclick="submitStep()">Check</button>
@@ -615,7 +672,7 @@ A: 10x - 6"></textarea>
 <script>
   // ══════════════════════════════════════════════════
   // REPLACE THIS WITH YOUR RAILWAY DEPLOYMENT URL:
-  const PROXY_URL = 'https://math-practice-production-b96e.up.railway.app';
+  const PROXY_URL = 'YOUR-RAILWAY-URL-HERE';
   // Example: 'https://math-practice-proxy-production.up.railway.app'
   // ══════════════════════════════════════════════════
 
@@ -743,6 +800,7 @@ A: 10x - 6"></textarea>
     document.getElementById('completed-card').style.display = 'none';
     document.getElementById('next-problem-btn').style.display = 'none';
     document.getElementById('input-area').style.display = 'flex';
+    document.getElementById('math-buttons').style.display = 'flex';
     document.getElementById('step-input').value = '';
     document.getElementById('step-input').disabled = false;
     document.getElementById('submit-step').disabled = false;
@@ -794,8 +852,18 @@ A: 10x - 6"></textarea>
     const systemPrompt = `You are a math step validator for a 7th grade student practicing algebra. Your ONLY job is to determine if the student's step is mathematically valid.
 
 CONTEXT:
-- Topics: expanding brackets, factorizing, creating algebraic expressions from word problems
+- Topics: expanding brackets, factorizing, creating algebraic expressions from word problems, indices (powers/exponents), square roots
 - The student is working step by step toward the answer
+
+INPUT NOTATION:
+The student uses a mix of Unicode and text notation. These are ALL equivalent and should be treated the same:
+- x² or x^2 (x squared)
+- x³ or x^3 (x cubed)
+- 2⁴ or 2^4 (2 to the power of 4)
+- √25 or sqrt(25) (square root of 25)
+- × or * (multiplication)
+- − or - (subtraction)
+Always interpret the student's input charitably — if the notation is clear, accept it.
 
 YOUR TASK:
 Given the original problem, any previous correct steps, and the student's new step, determine:
@@ -808,6 +876,7 @@ RULES FOR VALIDATION:
 - Partial progress is fine: expanding one bracket but not another is a valid step
 - Skipping steps is fine: going directly from problem to answer is valid IF the answer is correct
 - Be strict about mathematical correctness: wrong signs, wrong coefficients, wrong operations = WRONG
+- For indices: apply laws of indices strictly (aⁿ × aᵐ = aⁿ⁺ᵐ, (aⁿ)ᵐ = aⁿᵐ, a⁰ = 1, a⁻ⁿ = 1/aⁿ)
 - For word problems: the student's expression must correctly represent the described situation
 
 RESPOND IN EXACTLY THIS JSON FORMAT (no other text):
@@ -876,6 +945,7 @@ Validate this step. Respond with ONLY the JSON.`;
 
       if (result.is_final) {
         document.getElementById('input-area').style.display = 'none';
+        document.getElementById('math-buttons').style.display = 'none';
         document.getElementById('completed-card').style.display = 'block';
         if (currentIndex < problems.length - 1) {
           document.getElementById('next-problem-btn').style.display = 'block';
@@ -904,6 +974,27 @@ Validate this step. Respond with ONLY the JSON.`;
       document.getElementById('submit-step').disabled = false;
       document.getElementById('step-input').focus();
     }
+  }
+
+  // ── Insert math symbol at cursor ──
+  function insertMath(symbol) {
+    const input = document.getElementById('step-input');
+    insertAt(input, symbol);
+  }
+
+  function insertSetup(symbol) {
+    const input = document.getElementById('problems-input');
+    insertAt(input, symbol);
+  }
+
+  function insertAt(el, symbol) {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const val = el.value;
+    el.value = val.slice(0, start) + symbol + val.slice(end);
+    const newPos = start + symbol.length;
+    el.setSelectionRange(newPos, newPos);
+    el.focus();
   }
 
   // ── UI helpers ──
