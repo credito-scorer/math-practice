@@ -861,7 +861,7 @@ The student uses a mix of Unicode and text notation. These are ALL equivalent an
 - x³ or x^3 (x cubed)
 - 2⁴ or 2^4 (2 to the power of 4)
 - √25 or sqrt(25) (square root of 25)
-- × or * (multiplication)
+- × or * or implicit multiplication (multiplication) — "2pq" means 2×p×q, "2 × 2 × 2pq" means 8pq. The ×, *, and implicit multiplication are ALL equivalent; accept any form.
 - − or - (subtraction)
 Always interpret the student's input charitably — if the notation is clear, accept it.
 
@@ -878,6 +878,8 @@ RULES FOR VALIDATION:
 - Be strict about mathematical correctness: wrong signs, wrong coefficients, wrong operations = WRONG
 - For indices: apply laws of indices strictly (aⁿ × aᵐ = aⁿ⁺ᵐ, (aⁿ)ᵐ = aⁿᵐ, a⁰ = 1, a⁻ⁿ = 1/aⁿ)
 - For word problems: the student's expression must correctly represent the described situation
+- When factorizing, breaking terms into prime factors or partial factor groups is a valid intermediate step. E.g. for 8pq - 12p²: "2 × 4pq - 2 × 6p²" or "2 × 2 × 2pq - 2 × 2 × 3p²" or "4p(2q - 3p)" or "2(4pq - 6p²)" are all valid steps.
+- IMPORTANT: Only return "unsure" if you genuinely cannot determine mathematical equivalence. If the step is clearly a valid algebraic transformation, return valid: true. Err on the side of validating correct work rather than being overly cautious.
 
 RESPOND IN EXACTLY THIS JSON FORMAT (no other text):
 {
@@ -888,7 +890,7 @@ RESPOND IN EXACTLY THIS JSON FORMAT (no other text):
   "reason": "brief internal reason for your judgment"
 }
 
-If you are not confident in your judgment (edge cases, ambiguous notation, unclear if equivalent), set valid to "unsure". It is MUCH better to say "unsure" than to give a wrong judgment.`;
+Only use "unsure" as a last resort when you truly cannot evaluate the step mathematically.`;
 
     const userMsg = `PROBLEM: ${problem.question}
 EXPECTED FINAL ANSWER: ${problem.answer}
