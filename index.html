@@ -838,16 +838,30 @@ A: 10x - 6"></textarea>
     }
   }
 
+  // ── Normalize Unicode math to ASCII for API ──
+  function normalizeForAPI(str) {
+    return str
+      .replace(/×/g, '*')
+      .replace(/−/g, '-')
+      .replace(/²/g, '^2')
+      .replace(/³/g, '^3')
+      .replace(/√/g, 'sqrt');
+  }
+
   // ── Call Claude API ──
   async function validateStep(studentStep) {
     const problem = problems[currentIndex];
     const previousSteps = stepHistory.length > 0
-      ? `Previous correct steps:\n${stepHistory.map((s, i) => `  Step ${i + 1}: ${s}`).join('\n')}\n\n`
+      ? `Previous correct steps:\n${stepHistory.map((s, i) => `  Step ${i + 1}: ${normalizeForAPI(s)}`).join('\n')}\n\n`
       : '';
 
     const lastExpression = stepHistory.length > 0
-      ? stepHistory[stepHistory.length - 1]
-      : problem.question;
+      ? normalizeForAPI(stepHistory[stepHistory.length - 1])
+      : normalizeForAPI(problem.question);
+
+    const apiStep = normalizeForAPI(studentStep);
+    const apiQuestion = normalizeForAPI(problem.question);
+    const apiAnswer = normalizeForAPI(problem.answer);
 
     const systemPrompt = `You are a math step validator for a 7th grade student practicing algebra. Your ONLY job is to determine if the student's step is mathematically valid.
 
@@ -892,12 +906,12 @@ RESPOND IN EXACTLY THIS JSON FORMAT (no other text):
 
 Only use "unsure" as a last resort when you truly cannot evaluate the step mathematically.`;
 
-    const userMsg = `PROBLEM: ${problem.question}
-EXPECTED FINAL ANSWER: ${problem.answer}
+    const userMsg = `PROBLEM: ${apiQuestion}
+EXPECTED FINAL ANSWER: ${apiAnswer}
 
 ${previousSteps}The student's current starting point is: ${lastExpression}
 
-STUDENT'S NEW STEP: ${studentStep}
+STUDENT'S NEW STEP: ${apiStep}
 
 This is wrong-attempt #${wrongCount + 1} for this step (if 1, it's their first try).
 
