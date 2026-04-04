@@ -396,44 +396,84 @@
   .math-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
   .math-btn:active { background: var(--accent-light); transform: scale(0.96); }
 
-  /* ── Input ── */
-  .input-area {
+  /* ── Calculator Display ── */
+  #input-area {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
   }
 
   #step-input {
-    flex: 1;
+    width: 100%;
     padding: 12px 14px;
     border: 1.5px solid var(--border);
     border-radius: 10px;
     font-family: var(--mono);
-    font-size: 0.95rem;
+    font-size: 1rem;
     background: var(--card);
+    color: var(--text);
     outline: none;
-    transition: border-color 0.2s;
+    cursor: default;
+    caret-color: transparent;
   }
 
-  #step-input:focus { border-color: var(--accent); }
-  #step-input:disabled { opacity: 0.5; }
+  /* ── Calculator Grid ── */
+  #calc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
 
-  #submit-step {
-    padding: 12px 20px;
+  .calc-btn {
+    min-height: 48px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--card);
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s, transform 0.08s;
+  }
+
+  .calc-btn:active { transform: scale(0.93); }
+
+  .calc-btn.num { background: #F5F5F3; }
+  .calc-btn.num:active { background: #E5E5E3; }
+
+  .calc-btn.op { background: var(--accent-bg); color: var(--accent); border-color: var(--accent-light); }
+  .calc-btn.op:active { background: var(--accent-light); }
+
+  .calc-btn.var { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
+  .calc-btn.var:active { background: #C7D2FE; }
+
+  .calc-btn.special { background: #FFF8E7; color: #92680D; border-color: #F0D897; }
+  .calc-btn.special:active { background: #F0D897; }
+
+  .calc-btn.backspace { background: var(--wrong-bg); color: var(--wrong); border-color: #F5C6C3; font-size: 1.1rem; }
+  .calc-btn.backspace:active { background: #F5C6C3; }
+
+  .calc-btn.submit {
     background: var(--accent);
     color: white;
-    border: none;
-    border-radius: 10px;
+    border-color: var(--accent);
     font-family: var(--sans);
     font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    white-space: nowrap;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
   }
+  .calc-btn.submit:active { background: #235C42; transform: scale(0.98); }
 
-  #submit-step:hover { opacity: 0.9; }
-  #submit-step:disabled { opacity: 0.5; cursor: not-allowed; }
+  #calc-grid.disabled .calc-btn { opacity: 0.45; pointer-events: none; }
 
   .loading-indicator {
     display: none;
@@ -540,7 +580,7 @@
     body { padding: 14px; }
     .problem-card { padding: 20px; }
     .problem-text { font-size: 1rem; }
-    #step-input { font-size: 0.88rem; padding: 10px 12px; }
+    .calc-btn { min-height: 44px; font-size: 0.95rem; }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.js"></script>
@@ -630,24 +670,42 @@ A: 10x - 6"></textarea>
     <span>Checking your step...</span>
   </div>
 
-  <div class="math-buttons" id="math-buttons">
-    <button class="math-btn" onclick="insertMath('x')" title="variable x">x</button>
-    <button class="math-btn" onclick="insertMath('y')" title="variable y">y</button>
-    <button class="math-btn" onclick="insertMath('²')" title="squared">²</button>
-    <button class="math-btn" onclick="insertMath('³')" title="cubed">³</button>
-    <button class="math-btn" onclick="insertMath('^')" title="power of">^</button>
-    <button class="math-btn" onclick="insertMath('√')" title="square root">√</button>
-    <button class="math-btn" onclick="insertMath('(')" title="open bracket">(</button>
-    <button class="math-btn" onclick="insertMath(')')" title="close bracket">)</button>
-    <button class="math-btn" onclick="insertMath(' + ')" title="plus">+</button>
-    <button class="math-btn" onclick="insertMath(' - ')" title="minus">−</button>
-    <button class="math-btn" onclick="insertMath(' × ')" title="times">×</button>
-    <button class="math-btn" onclick="insertMath('/')" title="divide">/</button>
-  </div>
-
-  <div class="input-area" id="input-area">
-    <input type="text" id="step-input" placeholder="Type your next step..." autocomplete="off" />
-    <button id="submit-step" onclick="submitStep()">Check</button>
+  <div id="input-area">
+    <input type="text" id="step-input" placeholder="Tap buttons to enter your answer…" readonly />
+    <div id="calc-grid">
+      <!-- Row 1: 7 8 9 ⌫ -->
+      <button class="calc-btn num" onclick="insertMath('7')">7</button>
+      <button class="calc-btn num" onclick="insertMath('8')">8</button>
+      <button class="calc-btn num" onclick="insertMath('9')">9</button>
+      <button class="calc-btn backspace" style="grid-column:span 2" onclick="calcBackspace()">⌫</button>
+      <!-- Row 2: 4 5 6 + − -->
+      <button class="calc-btn num" onclick="insertMath('4')">4</button>
+      <button class="calc-btn num" onclick="insertMath('5')">5</button>
+      <button class="calc-btn num" onclick="insertMath('6')">6</button>
+      <button class="calc-btn op" onclick="insertMath(' + ')">+</button>
+      <button class="calc-btn op" onclick="insertMath(' - ')">−</button>
+      <!-- Row 3: 1 2 3 × ÷ -->
+      <button class="calc-btn num" onclick="insertMath('1')">1</button>
+      <button class="calc-btn num" onclick="insertMath('2')">2</button>
+      <button class="calc-btn num" onclick="insertMath('3')">3</button>
+      <button class="calc-btn op" onclick="insertMath(' × ')">×</button>
+      <button class="calc-btn op" onclick="insertMath('/')">÷</button>
+      <!-- Row 4: 0 (wide) . ( ) -->
+      <button class="calc-btn num" style="grid-column:span 2" onclick="insertMath('0')">0</button>
+      <button class="calc-btn num" onclick="insertMath('.')">.</button>
+      <button class="calc-btn op" onclick="insertMath('(')">(</button>
+      <button class="calc-btn op" onclick="insertMath(')')">)</button>
+      <!-- Row 5: x y ² ³ ^ -->
+      <button class="calc-btn var" onclick="insertMath('x')">x</button>
+      <button class="calc-btn var" onclick="insertMath('y')">y</button>
+      <button class="calc-btn special" onclick="insertMath('²')">²</button>
+      <button class="calc-btn special" onclick="insertMath('³')">³</button>
+      <button class="calc-btn special" onclick="insertMath('^')">^</button>
+      <!-- Row 6: √ space Check ✓ (wide) -->
+      <button class="calc-btn special" onclick="insertMath('√')">√</button>
+      <button class="calc-btn op" onclick="insertMath(' ')">space</button>
+      <button class="calc-btn submit" style="grid-column:span 3" onclick="submitStep()">Check ✓</button>
+    </div>
   </div>
 
   <div class="completed-card" id="completed-card">
@@ -680,6 +738,8 @@ A: 10x - 6"></textarea>
   let currentIndex = 0;
   let stepHistory = [];
   let wrongCount = 0;
+  let formCheckAttempts = 0;
+  let inputChunks = [];
   let askRonelProblems = [];
   let generatedLink = '';
 
@@ -793,12 +853,22 @@ A: 10x - 6"></textarea>
 
   // ── Ask Claude to check if student's answer is in the correct structural form ──
   async function askClaudeFormCheck(studentStep, expectedAnswer) {
+    let hintInstruction;
+    if (formCheckAttempts === 0) {
+      hintInstruction = "Respond with feedback like 'Correct so far, keep simplifying!' — do NOT mention what to factor out or what the answer looks like.";
+    } else if (formCheckAttempts === 1) {
+      hintInstruction = "Give a slightly more specific hint about what direction to go, like 'Look for common factors you can still take out.' Do NOT reveal the final form.";
+    } else if (formCheckAttempts === 2) {
+      hintInstruction = "Give a more direct hint, like 'Try factoring out [type of factor] from the terms.' Still do NOT show the final answer.";
+    } else {
+      hintInstruction = "Show the expected form clearly.";
+    }
     try {
       const response = await fetch(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system: `The teacher expects the answer in this form: ${expectedAnswer}. The student wrote: ${studentStep}. Both are mathematically equivalent (already verified). Is the student's answer in the SAME STRUCTURAL FORM as the teacher's? Same level of factoring, same grouping, same simplification level. Respond with ONLY a JSON object: { "match": true/false, "feedback": "brief message if no match, e.g. 'Correct, but try factoring further!'" }`,
+          system: `The teacher expects the answer in this form: ${expectedAnswer}. The student wrote: ${studentStep}. Both are mathematically equivalent (already verified). Is the student's answer in the SAME STRUCTURAL FORM as the teacher's? Same level of factoring, same grouping, same simplification level. ${hintInstruction} Respond with ONLY a JSON object: { "match": true/false, "feedback": "brief message if no match" }`,
           messages: [{ role: 'user', content: `Teacher's expected form: ${expectedAnswer}\nStudent's answer: ${studentStep}` }]
         })
       });
@@ -852,9 +922,7 @@ A: 10x - 6"></textarea>
   }
 
   function reenableInput() {
-    document.getElementById('step-input').disabled = false;
-    document.getElementById('submit-step').disabled = false;
-    document.getElementById('step-input').focus();
+    document.getElementById('calc-grid').classList.remove('disabled');
   }
 
   // ── Check if URL has problem data (student mode) ──
@@ -958,6 +1026,7 @@ A: 10x - 6"></textarea>
     currentIndex = index;
     stepHistory = [];
     wrongCount = 0;
+    formCheckAttempts = 0;
 
     const p = problems[index];
     document.getElementById('problem-number').textContent = `${index + 1} of ${problems.length}`;
@@ -969,11 +1038,8 @@ A: 10x - 6"></textarea>
     document.getElementById('completed-card').style.display = 'none';
     document.getElementById('next-problem-btn').style.display = 'none';
     document.getElementById('input-area').style.display = 'flex';
-    document.getElementById('math-buttons').style.display = 'flex';
-    document.getElementById('step-input').value = '';
-    document.getElementById('step-input').disabled = false;
-    document.getElementById('submit-step').disabled = false;
-    document.getElementById('step-input').focus();
+    clearDisplay();
+    document.getElementById('calc-grid').classList.remove('disabled');
     updateProgress();
   }
 
@@ -989,8 +1055,7 @@ A: 10x - 6"></textarea>
     const input = document.getElementById('step-input').value.trim();
     if (!input) return;
 
-    document.getElementById('step-input').disabled = true;
-    document.getElementById('submit-step').disabled = true;
+    document.getElementById('calc-grid').classList.add('disabled');
     document.getElementById('feedback').style.display = 'none';
 
     const problem = problems[currentIndex];
@@ -1030,26 +1095,26 @@ A: 10x - 6"></textarea>
         if (formCheck === null || formCheck.match === true) {
           // Accept: Claude agrees on form, or we couldn't reach Claude (Algebrite already confirmed correct)
           document.getElementById('input-area').style.display = 'none';
-          document.getElementById('math-buttons').style.display = 'none';
           document.getElementById('completed-card').style.display = 'block';
           document.getElementById('next-problem-btn').style.display = 'block';
           document.getElementById('next-problem-btn').textContent =
             currentIndex < problems.length - 1 ? 'Next Problem →' : 'Finish ✓';
         } else {
           // Wrong form — show Claude's feedback, let student keep going
+          formCheckAttempts++;
           showFeedback('nudge', formCheck.feedback || 'Correct value, but try to simplify or factor further!');
-          document.getElementById('step-input').value = '';
+          clearDisplay();
           reenableInput();
         }
       } else {
         // Correct intermediate step — keep going
-        document.getElementById('step-input').value = '';
+        clearDisplay();
         reenableInput();
       }
     } else {
       // Invalid step
       wrongCount++;
-      document.getElementById('step-input').value = '';
+      clearDisplay();
 
       if (wrongCount >= 4) {
         showLoading('Getting help...');
@@ -1070,12 +1135,27 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Insert math symbol at cursor ──
+  // ── Calculator input (student screen — chunk-based, readonly display) ──
   function insertMath(symbol) {
-    const input = document.getElementById('step-input');
-    insertAt(input, symbol);
+    inputChunks.push(symbol);
+    updateDisplay();
   }
 
+  function calcBackspace() {
+    inputChunks.pop();
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    document.getElementById('step-input').value = inputChunks.join('');
+  }
+
+  function clearDisplay() {
+    inputChunks = [];
+    document.getElementById('step-input').value = '';
+  }
+
+  // ── Setup screen: cursor-aware insert (teacher uses keyboard) ──
   function insertSetup(symbol) {
     const input = document.getElementById('problems-input');
     insertAt(input, symbol);
@@ -1132,10 +1212,10 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Enter key ──
+  // ── Enter key (desktop convenience) ──
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.getElementById('practice-screen').style.display !== 'none') {
-      if (!document.getElementById('step-input').disabled) submitStep();
+      if (!document.getElementById('calc-grid').classList.contains('disabled')) submitStep();
     }
   });
 
