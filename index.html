@@ -1295,36 +1295,55 @@
 
   // ── Check algebraic equivalence via Algebrite ──
   function equationEquivalence(a, b) {
+    const t0 = performance.now();
+    console.log('[equationEquivalence] entry', { a, b });
     const normA = normalize(equationToExpr(a));
     const normB = normalize(equationToExpr(b));
+    console.log('[equationEquivalence] normalized', { normA, normB });
     const diffResult = Algebrite.run(`simplify((${normA}) - (${normB}))`);
     const diffTrimmed = diffResult.trim();
-    if (diffTrimmed === '0') return { valid: true };
+    console.log(`[equationEquivalence] diff="${diffTrimmed}" (${(performance.now()-t0).toFixed(1)}ms)`);
+    if (diffTrimmed === '0') {
+      console.log(`[equationEquivalence] matched via diff in ${(performance.now()-t0).toFixed(1)}ms`);
+      return { valid: true };
+    }
     const multipliers = ['1','-1','2','-2','3','-3','4','-4','5','-5',
                          '1/2','-1/2','1/3','-1/3','1/4','-1/4','1/5','-1/5'];
     for (const k of multipliers) {
+      const tK = performance.now();
       const r = Algebrite.run(`simplify((${normA}) - (${k})*(${normB}))`).trim();
-      if (r === '0') return { valid: true };
+      console.log(`[equationEquivalence] k=${k} → "${r}" (${(performance.now()-tK).toFixed(1)}ms)`);
+      if (r === '0') {
+        console.log(`[equationEquivalence] matched via k=${k} in ${(performance.now()-t0).toFixed(1)}ms total`);
+        return { valid: true };
+      }
     }
+    console.log(`[equationEquivalence] no match → parseError (${(performance.now()-t0).toFixed(1)}ms total)`);
     return { valid: null, parseError: true };
   }
 
   function checkEquivalence(exprA, exprB, problemType) {
+    const t0 = performance.now();
+    console.log('[checkEquivalence] entry', { exprA, exprB, problemType });
     try {
       if (containsEquals(exprA) && containsEquals(exprB) && problemType !== 'Evaluate') {
-        return equationEquivalence(exprA, exprB);
+        const result = equationEquivalence(exprA, exprB);
+        console.log(`[checkEquivalence] exit via equationEquivalence in ${(performance.now()-t0).toFixed(1)}ms`, result);
+        return result;
       }
       const normA = normalize(exprA);
       const normB = normalize(exprB);
+      console.log('[checkEquivalence] Algebrite call', { normA, normB });
       const diffResult = Algebrite.run(`simplify((${normA}) - (${normB}))`);
       const diffTrimmed = diffResult.trim();
+      console.log(`[checkEquivalence] Algebrite result="${diffTrimmed}" in ${(performance.now()-t0).toFixed(1)}ms`);
       if (diffTrimmed === '0') return { valid: true };
       if (!diffTrimmed || diffTrimmed.toLowerCase().includes('stop') || diffTrimmed.toLowerCase().includes('error')) {
         return { valid: null, parseError: true };
       }
       return { valid: false };
     } catch (e) {
-      console.error('Algebrite error:', e);
+      console.error('[checkEquivalence] Algebrite threw:', e);
       return { valid: null, parseError: true };
     }
   }
@@ -1339,10 +1358,23 @@
       .trim();
   }
 
+  // ── Fetch with 10s timeout ──
+  function fetchWithTimeout(url, options, ms = 10000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => {
+      console.warn(`[fetchWithTimeout] TIMED OUT after ${ms}ms: ${url}`);
+      controller.abort();
+    }, ms);
+    return fetch(url, { ...options, signal: controller.signal })
+      .finally(() => clearTimeout(id));
+  }
+
   // ── Ask Claude helpers ──
   async function askClaudeToInterpret(input) {
+    const t0 = performance.now();
+    console.log('[askClaudeToInterpret] entry', { input });
     try {
-      const response = await fetch(PROXY_URL + '/validate', {
+      const response = await fetchWithTimeout(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1350,18 +1382,28 @@
           messages: [{ role: 'user', content: input }]
         })
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn('[askClaudeToInterpret] response not ok:', response.status);
+        return null;
+      }
       const data = await response.json();
-      return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) { return null; }
+      const result = data.content.map(c => c.text || '').join('').trim() || null;
+      console.log(`[askClaudeToInterpret] exit in ${(performance.now()-t0).toFixed(1)}ms:`, result);
+      return result;
+    } catch (e) {
+      console.error(`[askClaudeToInterpret] error after ${(performance.now()-t0).toFixed(1)}ms:`, e);
+      return null;
+    }
   }
 
   async function askClaudeForHint(problem, history, currentExpr, wrongInput) {
+    const t0 = performance.now();
+    console.log('[askClaudeForHint] entry', { currentExpr, wrongInput });
     try {
       const stepsText = history.length > 0
         ? `Previous correct steps:\n${history.map((s, i) => `  Step ${i + 1}: ${s}`).join('\n')}\n\n`
         : '';
-      const response = await fetch(PROXY_URL + '/validate', {
+      const response = await fetchWithTimeout(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1372,14 +1414,23 @@
           }]
         })
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn('[askClaudeForHint] response not ok:', response.status);
+        return null;
+      }
       const data = await response.json();
-      return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) { return null; }
+      const result = data.content.map(c => c.text || '').join('').trim() || null;
+      console.log(`[askClaudeForHint] exit in ${(performance.now()-t0).toFixed(1)}ms:`, result);
+      return result;
+    } catch (e) {
+      console.error(`[askClaudeForHint] error after ${(performance.now()-t0).toFixed(1)}ms:`, e);
+      return null;
+    }
   }
 
   async function askClaudeFormCheck(studentStep, expectedAnswer, problemType) {
-    console.log('FORM CHECK CALLED', { studentStep, expectedAnswer, problemType, formCheckAttempts });
+    const t0 = performance.now();
+    console.log('[askClaudeFormCheck] entry', { studentStep, expectedAnswer, problemType, formCheckAttempts });
     let hintInstruction;
     if (formCheckAttempts === 0) {
       hintInstruction = "STRICT RULE: Your feedback must contain ZERO specifics. Do NOT mention any variables, numbers, coefficients, factors, or anything about the structure of the answer. ONLY say something like 'Correct so far, but keep going!' or 'You're on the right track — this can be simplified further.' Nothing else. NEVER hint at what to do next.";
@@ -1392,7 +1443,7 @@
     }
     try {
       const typeContext = problemType ? `The problem type is: ${problemType}. ` : '';
-      const response = await fetch(PROXY_URL + '/validate', {
+      const response = await fetchWithTimeout(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1400,25 +1451,35 @@
           messages: [{ role: 'user', content: `Teacher's expected form: ${expectedAnswer}\nStudent's answer: ${studentStep}` }]
         })
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn('[askClaudeFormCheck] response not ok:', response.status);
+        return null;
+      }
       const data = await response.json();
       const text = data.content.map(c => c.text || '').join('').trim();
       const start = text.indexOf('{');
       const end = text.lastIndexOf('}');
-      if (start === -1 || end === -1) return null;
-      return JSON.parse(text.slice(start, end + 1));
+      if (start === -1 || end === -1) {
+        console.warn('[askClaudeFormCheck] could not parse JSON from response:', text);
+        return null;
+      }
+      const result = JSON.parse(text.slice(start, end + 1));
+      console.log(`[askClaudeFormCheck] exit in ${(performance.now()-t0).toFixed(1)}ms:`, result);
+      return result;
     } catch (e) {
-      console.error('Form check error:', e);
+      console.error(`[askClaudeFormCheck] error after ${(performance.now()-t0).toFixed(1)}ms:`, e);
       return null;
     }
   }
 
   async function askClaudeForReveal(problem, history, currentExpr) {
+    const t0 = performance.now();
+    console.log('[askClaudeForReveal] entry', { currentExpr });
     try {
       const stepsText = history.length > 0
         ? `Previous correct steps:\n${history.map((s, i) => `  Step ${i + 1}: ${s}`).join('\n')}\n\n`
         : '';
-      const response = await fetch(PROXY_URL + '/validate', {
+      const response = await fetchWithTimeout(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1429,10 +1490,18 @@
           }]
         })
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn('[askClaudeForReveal] response not ok:', response.status);
+        return null;
+      }
       const data = await response.json();
-      return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) { return null; }
+      const result = data.content.map(c => c.text || '').join('').trim() || null;
+      console.log(`[askClaudeForReveal] exit in ${(performance.now()-t0).toFixed(1)}ms:`, result);
+      return result;
+    } catch (e) {
+      console.error(`[askClaudeForReveal] error after ${(performance.now()-t0).toFixed(1)}ms:`, e);
+      return null;
+    }
   }
 
   // ── Loading indicator helpers ──
@@ -1550,15 +1619,19 @@
         ? stepHistory[stepHistory.length - 1]
         : extractExpression(problem.question);
 
-    console.log('[submitStep] raw input:', JSON.stringify(input));
-    console.log('[submitStep] normalized:', JSON.stringify(normalize(input)));
-    console.log('[submitStep] comparing against:', JSON.stringify(previousExpression));
+    const t0 = performance.now();
+    console.log('[submitStep] entry', { input, problemType: problem.type, previousExpression });
+    console.log('[submitStep] normalized input:', JSON.stringify(normalize(input)));
 
     let equiv = checkEquivalence(previousExpression, input, problem.type);
+    console.log(`[submitStep] checkEquivalence result in ${(performance.now()-t0).toFixed(1)}ms:`, equiv);
 
     if (equiv.valid === null) {
       showLoading('Interpreting your input...');
+      console.log('[submitStep] asking Claude to interpret input...');
+      const tI = performance.now();
       const interpreted = await askClaudeToInterpret(input);
+      console.log(`[submitStep] Claude interpret returned in ${(performance.now()-tI).toFixed(1)}ms:`, interpreted);
       hideLoading();
       if (interpreted) equiv = checkEquivalence(previousExpression, interpreted, problem.type);
       if (equiv.valid === null) {
@@ -1575,6 +1648,7 @@
       document.getElementById('feedback').style.display = 'none';
 
       const isFinal = checkIsFinal(input, problem.answer, problem.type);
+      console.log('[submitStep] checkIsFinal:', isFinal);
       if (isFinal.valid === true) {
         const useRawMatch = ['Expand', 'Solve', 'Evaluate'].includes(problem.type);
         let formMatches, formFeedback;
@@ -1583,15 +1657,20 @@
           const rawB = problem.answer.replace(/\s+/g, ' ').trim().toLowerCase();
           formMatches = rawA === rawB;
           formFeedback = null;
+          console.log('[submitStep] raw form match:', formMatches, { rawA, rawB });
         } else {
           showLoading('Checking answer form...');
+          console.log('[submitStep] calling askClaudeFormCheck...');
+          const tF = performance.now();
           const formCheck = await askClaudeFormCheck(input, problem.answer, problem.type);
+          console.log(`[submitStep] askClaudeFormCheck returned in ${(performance.now()-tF).toFixed(1)}ms:`, formCheck);
           hideLoading();
           formMatches = formCheck === null || formCheck.match === true;
           formFeedback = formCheck?.feedback;
         }
 
         if (formMatches) {
+          console.log('[submitStep] problem complete — updating DOM');
           document.getElementById('input-area').style.display = 'none';
           document.getElementById('completed-card').style.display = 'block';
           document.getElementById('next-problem-btn').style.display = 'block';
@@ -1613,14 +1692,20 @@
 
       if (wrongCount >= 4) {
         showLoading('Getting help...');
+        console.log('[submitStep] calling askClaudeForReveal...');
+        const tR = performance.now();
         const nextStep = await askClaudeForReveal(problem, stepHistory, previousExpression);
+        console.log(`[submitStep] askClaudeForReveal returned in ${(performance.now()-tR).toFixed(1)}ms:`, nextStep);
         hideLoading();
         showFeedback('reveal', nextStep
           ? `Here's a valid next step: ${nextStep}`
           : "That step doesn't look right. Keep trying!");
       } else if (wrongCount >= 2) {
         showLoading('Getting a hint...');
+        console.log('[submitStep] calling askClaudeForHint...');
+        const tH = performance.now();
         const hint = await askClaudeForHint(problem, stepHistory, previousExpression, input);
+        console.log(`[submitStep] askClaudeForHint returned in ${(performance.now()-tH).toFixed(1)}ms:`, hint);
         hideLoading();
         showFeedback('nudge', hint || "That step doesn't look right. Try again!");
       } else {
@@ -1628,6 +1713,7 @@
       }
       reenableInput();
     }
+    console.log(`[submitStep] total time: ${(performance.now()-t0).toFixed(1)}ms`);
   }
 
   // ── Student calculator input ──
