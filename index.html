@@ -58,46 +58,135 @@
   #setup-screen .subtitle {
     color: var(--text-secondary);
     font-size: 0.95rem;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     line-height: 1.5;
   }
 
-  .setup-section {
-    margin-bottom: 24px;
-  }
-
-  .setup-section label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-  }
-
-  #problems-input {
-    width: 100%;
-    min-height: 200px;
-    padding: 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    line-height: 1.7;
-    background: var(--card);
-    outline: none;
-    resize: vertical;
-    transition: border-color 0.2s;
+  /* ── Problem Builder Cards ── */
+  #cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 10px;
   }
 
-  #problems-input:focus { border-color: var(--accent); }
+  .builder-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    animation: slideIn 0.2s ease;
+  }
+
+  .builder-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .builder-card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .builder-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    padding: 4px 6px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .builder-delete-btn:hover { background: var(--wrong-bg); color: var(--wrong); }
+
+  .builder-field {
+    margin-bottom: 10px;
+  }
+
+  .builder-field:last-child { margin-bottom: 0; }
+
+  .builder-field-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+
+  .builder-type-select {
+    width: 100%;
+    padding: 9px 32px 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  .builder-type-select:focus { border-color: var(--accent); }
+
+  .builder-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .builder-input:focus { border-color: var(--accent); }
+
+  .builder-input.active-field {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  .add-problem-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px dashed var(--accent);
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 14px;
+  }
+
+  .add-problem-btn:hover { background: var(--accent-bg); }
 
   .format-hint {
     font-size: 0.78rem;
     color: var(--text-secondary);
-    margin-top: 8px;
+    margin-top: 10px;
+    margin-bottom: 16px;
     line-height: 1.5;
     background: var(--accent-bg);
     padding: 10px 12px;
@@ -105,18 +194,11 @@
     border-left: 3px solid var(--accent);
   }
 
-  .format-hint code {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    background: rgba(45, 106, 79, 0.08);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
-
   .setup-error {
     color: var(--wrong);
     font-size: 0.85rem;
     margin-top: 8px;
+    margin-bottom: 8px;
     display: none;
   }
 
@@ -180,9 +262,7 @@
     margin-bottom: 14px;
   }
 
-  .btn-row button {
-    flex: 1;
-  }
+  .btn-row button { flex: 1; }
 
   .btn-secondary {
     padding: 12px 16px;
@@ -364,8 +444,8 @@
     display: none;
   }
 
-  .feedback.wrong { background: var(--wrong-bg); color: var(--wrong); display: block; }
-  .feedback.nudge { background: var(--nudge-bg); color: var(--nudge); display: block; }
+  .feedback.wrong  { background: var(--wrong-bg);  color: var(--wrong);  display: block; }
+  .feedback.nudge  { background: var(--nudge-bg);  color: var(--nudge);  display: block; }
   .feedback.unsure { background: var(--unsure-bg); color: var(--unsure); display: block; }
   .feedback.reveal { background: var(--accent-bg); color: var(--accent); display: block; font-family: var(--mono); }
 
@@ -485,7 +565,7 @@
     user-select: none;
   }
 
-  .toggle-btn:hover { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+  .toggle-btn:hover  { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
   .toggle-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
   /* ── Expandable Panels ── */
@@ -510,8 +590,8 @@
     font-size: 0.95rem;
   }
 
-  /* Disabled state */
-  #calc-grid.disabled .calc-btn { opacity: 0.45; pointer-events: none; }
+  /* Disabled state (student only) */
+  #calc-grid.disabled .calc-btn   { opacity: 0.45; pointer-events: none; }
   #calc-grid.disabled .toggle-btn { opacity: 0.45; pointer-events: none; }
 
   .loading-indicator {
@@ -549,7 +629,7 @@
 
   .completed-card .check { font-size: 2rem; margin-bottom: 8px; }
   .completed-card h3 { color: var(--correct); font-size: 1.1rem; margin-bottom: 4px; }
-  .completed-card p { color: var(--correct); font-size: 0.88rem; opacity: 0.8; }
+  .completed-card p  { color: var(--correct); font-size: 0.88rem; opacity: 0.8; }
 
   #next-problem-btn {
     width: 100%;
@@ -579,7 +659,7 @@
 
   #done-screen .done-icon { font-size: 3rem; margin-bottom: 16px; }
   #done-screen h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
-  #done-screen p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; }
+  #done-screen p  { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; }
 
   .ask-ronel-list {
     margin-top: 20px;
@@ -630,142 +710,134 @@
 <!-- ════════ SETUP / TEACHER MODE ════════ -->
 <div id="setup-screen">
   <h1>Math Practice ✏️</h1>
-  <p class="subtitle">Add the homework problems below, then generate a link for your student.</p>
+  <p class="subtitle">Build your homework problems below, then generate a link for your student.</p>
 
-  <div class="setup-section">
-    <label>Problems</label>
-    <textarea id="problems-input" placeholder="Q: Expand 3(2x + 5)
-A: 6x + 15
+  <!-- Problem cards (dynamically populated) -->
+  <div id="cards-container"></div>
 
-Q: Factorize 6x + 12
-A: 6(x + 2)
+  <button class="add-problem-btn" onclick="addProblemCard()">+ Add Problem</button>
 
-Q: Expand and simplify 2(3x + 1) + 4(x - 2)
-A: 10x - 6"></textarea>
-
-    <!-- Teacher Calculator Grid (no Check button) -->
-    <div class="calc-wrapper" id="setup-calc-wrapper">
-      <div class="calc-main">
-        <!-- Row 1: 7 8 9 ⌫ -->
-        <div class="calc-row">
-          <button class="calc-btn num" onclick="insertSetup('7')">7</button>
-          <button class="calc-btn num" onclick="insertSetup('8')">8</button>
-          <button class="calc-btn num" onclick="insertSetup('9')">9</button>
-          <button class="calc-btn backspace" onclick="setupBackspace()">⌫</button>
-        </div>
-        <!-- Row 2: 4 5 6 + − -->
-        <div class="calc-row">
-          <button class="calc-btn num" onclick="insertSetup('4')">4</button>
-          <button class="calc-btn num" onclick="insertSetup('5')">5</button>
-          <button class="calc-btn num" onclick="insertSetup('6')">6</button>
-          <button class="calc-btn op" onclick="insertSetup(' + ')">+</button>
-          <button class="calc-btn op" onclick="insertSetup(' - ')">−</button>
-        </div>
-        <!-- Row 3: 1 2 3 × / -->
-        <div class="calc-row">
-          <button class="calc-btn num" onclick="insertSetup('1')">1</button>
-          <button class="calc-btn num" onclick="insertSetup('2')">2</button>
-          <button class="calc-btn num" onclick="insertSetup('3')">3</button>
-          <button class="calc-btn op" onclick="insertSetup(' × ')">×</button>
-          <button class="calc-btn op" onclick="insertSetup(' / ')">÷</button>
-        </div>
-        <!-- Row 4: 0 . ( ) -->
-        <div class="calc-row">
-          <button class="calc-btn num" onclick="insertSetup('0')">0</button>
-          <button class="calc-btn num" onclick="insertSetup('.')">.</button>
-          <button class="calc-btn op" onclick="insertSetup('(')">(</button>
-          <button class="calc-btn op" onclick="insertSetup(')')">)</button>
-        </div>
-        <!-- Row 5: x y z a b c -->
-        <div class="calc-row">
-          <button class="calc-btn var" onclick="insertSetup('x')">x</button>
-          <button class="calc-btn var" onclick="insertSetup('y')">y</button>
-          <button class="calc-btn var" onclick="insertSetup('z')">z</button>
-          <button class="calc-btn var" onclick="insertSetup('a')">a</button>
-          <button class="calc-btn var" onclick="insertSetup('b')">b</button>
-          <button class="calc-btn var" onclick="insertSetup('c')">c</button>
-        </div>
-        <!-- Row 6: ² ³ ^ space -->
-        <div class="calc-row">
-          <button class="calc-btn special" onclick="insertSetup('²')">²</button>
-          <button class="calc-btn special" onclick="insertSetup('³')">³</button>
-          <button class="calc-btn special" onclick="insertSetup('^')">^</button>
-          <button class="calc-btn op" onclick="insertSetup(' ')">space</button>
-        </div>
+  <!-- Shared Calculator Grid (inserts into last-focused card input) -->
+  <div class="calc-wrapper" id="setup-calc-wrapper">
+    <div class="calc-main">
+      <!-- Row 1: 7 8 9 ⌫ -->
+      <div class="calc-row">
+        <button class="calc-btn num" onclick="insertSetup('7')">7</button>
+        <button class="calc-btn num" onclick="insertSetup('8')">8</button>
+        <button class="calc-btn num" onclick="insertSetup('9')">9</button>
+        <button class="calc-btn backspace" onclick="setupBackspace()">⌫</button>
       </div>
-
-      <!-- Toggle buttons -->
-      <div class="calc-toggles">
-        <button class="toggle-btn" id="setup-toggle-abc" onclick="togglePanel('setup', 'abc')">abc</button>
-        <button class="toggle-btn" id="setup-toggle-ops" onclick="togglePanel('setup', 'ops')">ops</button>
-        <button class="toggle-btn" id="setup-toggle-greek" onclick="togglePanel('setup', 'greek')">αβ</button>
+      <!-- Row 2: 4 5 6 + − -->
+      <div class="calc-row">
+        <button class="calc-btn num" onclick="insertSetup('4')">4</button>
+        <button class="calc-btn num" onclick="insertSetup('5')">5</button>
+        <button class="calc-btn num" onclick="insertSetup('6')">6</button>
+        <button class="calc-btn op" onclick="insertSetup(' + ')">+</button>
+        <button class="calc-btn op" onclick="insertSetup(' - ')">−</button>
       </div>
-
-      <!-- Panel: abc -->
-      <div class="calc-panel" id="setup-panel-abc">
-        <div class="panel-buttons">
-          <button class="calc-btn var" onclick="insertSetup('d')">d</button>
-          <button class="calc-btn var" onclick="insertSetup('e')">e</button>
-          <button class="calc-btn var" onclick="insertSetup('f')">f</button>
-          <button class="calc-btn var" onclick="insertSetup('g')">g</button>
-          <button class="calc-btn var" onclick="insertSetup('h')">h</button>
-          <button class="calc-btn var" onclick="insertSetup('i')">i</button>
-          <button class="calc-btn var" onclick="insertSetup('j')">j</button>
-          <button class="calc-btn var" onclick="insertSetup('k')">k</button>
-          <button class="calc-btn var" onclick="insertSetup('l')">l</button>
-          <button class="calc-btn var" onclick="insertSetup('m')">m</button>
-          <button class="calc-btn var" onclick="insertSetup('n')">n</button>
-          <button class="calc-btn var" onclick="insertSetup('o')">o</button>
-          <button class="calc-btn var" onclick="insertSetup('p')">p</button>
-          <button class="calc-btn var" onclick="insertSetup('q')">q</button>
-          <button class="calc-btn var" onclick="insertSetup('r')">r</button>
-          <button class="calc-btn var" onclick="insertSetup('s')">s</button>
-          <button class="calc-btn var" onclick="insertSetup('t')">t</button>
-          <button class="calc-btn var" onclick="insertSetup('u')">u</button>
-          <button class="calc-btn var" onclick="insertSetup('v')">v</button>
-          <button class="calc-btn var" onclick="insertSetup('w')">w</button>
-        </div>
+      <!-- Row 3: 1 2 3 × / -->
+      <div class="calc-row">
+        <button class="calc-btn num" onclick="insertSetup('1')">1</button>
+        <button class="calc-btn num" onclick="insertSetup('2')">2</button>
+        <button class="calc-btn num" onclick="insertSetup('3')">3</button>
+        <button class="calc-btn op" onclick="insertSetup(' × ')">×</button>
+        <button class="calc-btn op" onclick="insertSetup(' / ')">÷</button>
       </div>
-
-      <!-- Panel: ops -->
-      <div class="calc-panel" id="setup-panel-ops">
-        <div class="panel-buttons">
-          <button class="calc-btn special" onclick="insertSetup('√')">√</button>
-          <button class="calc-btn special" onclick="insertSetup('⁴')">⁴</button>
-          <button class="calc-btn special" onclick="insertSetup('⁵')">⁵</button>
-          <button class="calc-btn special" onclick="insertSetup('⁶')">⁶</button>
-          <button class="calc-btn special" onclick="insertSetup('⁷')">⁷</button>
-          <button class="calc-btn special" onclick="insertSetup('⁸')">⁸</button>
-          <button class="calc-btn special" onclick="insertSetup('⁹')">⁹</button>
-          <button class="calc-btn op" onclick="insertSetup(' = ')">=</button>
-          <button class="calc-btn op" onclick="insertSetup(' ≠ ')">≠</button>
-          <button class="calc-btn op" onclick="insertSetup(' ≤ ')">≤</button>
-          <button class="calc-btn op" onclick="insertSetup(' ≥ ')">≥</button>
-          <button class="calc-btn op" onclick="insertSetup(' ± ')">±</button>
-        </div>
+      <!-- Row 4: 0 . ( ) -->
+      <div class="calc-row">
+        <button class="calc-btn num" onclick="insertSetup('0')">0</button>
+        <button class="calc-btn num" onclick="insertSetup('.')">.</button>
+        <button class="calc-btn op" onclick="insertSetup('(')">(</button>
+        <button class="calc-btn op" onclick="insertSetup(')')">)</button>
       </div>
-
-      <!-- Panel: greek -->
-      <div class="calc-panel" id="setup-panel-greek">
-        <div class="panel-buttons">
-          <button class="calc-btn special" onclick="insertSetup('α')">α</button>
-          <button class="calc-btn special" onclick="insertSetup('β')">β</button>
-          <button class="calc-btn special" onclick="insertSetup('θ')">θ</button>
-          <button class="calc-btn special" onclick="insertSetup('π')">π</button>
-          <button class="calc-btn special" onclick="insertSetup('Δ')">Δ</button>
-          <button class="calc-btn special" onclick="insertSetup('λ')">λ</button>
-          <button class="calc-btn special" onclick="insertSetup('μ')">μ</button>
-        </div>
+      <!-- Row 5: x y z a b c -->
+      <div class="calc-row">
+        <button class="calc-btn var" onclick="insertSetup('x')">x</button>
+        <button class="calc-btn var" onclick="insertSetup('y')">y</button>
+        <button class="calc-btn var" onclick="insertSetup('z')">z</button>
+        <button class="calc-btn var" onclick="insertSetup('a')">a</button>
+        <button class="calc-btn var" onclick="insertSetup('b')">b</button>
+        <button class="calc-btn var" onclick="insertSetup('c')">c</button>
+      </div>
+      <!-- Row 6: ² ³ ^ space -->
+      <div class="calc-row">
+        <button class="calc-btn special" onclick="insertSetup('²')">²</button>
+        <button class="calc-btn special" onclick="insertSetup('³')">³</button>
+        <button class="calc-btn special" onclick="insertSetup('^')">^</button>
+        <button class="calc-btn op" onclick="insertSetup(' ')">space</button>
       </div>
     </div>
-    <!-- end setup-calc-wrapper -->
 
-    <div class="format-hint" style="margin-top:10px;">
-      One problem per block, separated by blank lines.<br>
-      <code>Q:</code> the problem &nbsp; <code>A:</code> the expected final answer
+    <!-- Toggle buttons -->
+    <div class="calc-toggles">
+      <button class="toggle-btn" id="setup-toggle-abc"   onclick="togglePanel('setup', 'abc')">abc</button>
+      <button class="toggle-btn" id="setup-toggle-ops"   onclick="togglePanel('setup', 'ops')">ops</button>
+      <button class="toggle-btn" id="setup-toggle-greek" onclick="togglePanel('setup', 'greek')">αβ</button>
     </div>
-    <div class="setup-error" id="setup-error"></div>
+
+    <!-- Panel: abc -->
+    <div class="calc-panel" id="setup-panel-abc">
+      <div class="panel-buttons">
+        <button class="calc-btn var" onclick="insertSetup('d')">d</button>
+        <button class="calc-btn var" onclick="insertSetup('e')">e</button>
+        <button class="calc-btn var" onclick="insertSetup('f')">f</button>
+        <button class="calc-btn var" onclick="insertSetup('g')">g</button>
+        <button class="calc-btn var" onclick="insertSetup('h')">h</button>
+        <button class="calc-btn var" onclick="insertSetup('i')">i</button>
+        <button class="calc-btn var" onclick="insertSetup('j')">j</button>
+        <button class="calc-btn var" onclick="insertSetup('k')">k</button>
+        <button class="calc-btn var" onclick="insertSetup('l')">l</button>
+        <button class="calc-btn var" onclick="insertSetup('m')">m</button>
+        <button class="calc-btn var" onclick="insertSetup('n')">n</button>
+        <button class="calc-btn var" onclick="insertSetup('o')">o</button>
+        <button class="calc-btn var" onclick="insertSetup('p')">p</button>
+        <button class="calc-btn var" onclick="insertSetup('q')">q</button>
+        <button class="calc-btn var" onclick="insertSetup('r')">r</button>
+        <button class="calc-btn var" onclick="insertSetup('s')">s</button>
+        <button class="calc-btn var" onclick="insertSetup('t')">t</button>
+        <button class="calc-btn var" onclick="insertSetup('u')">u</button>
+        <button class="calc-btn var" onclick="insertSetup('v')">v</button>
+        <button class="calc-btn var" onclick="insertSetup('w')">w</button>
+      </div>
+    </div>
+
+    <!-- Panel: ops -->
+    <div class="calc-panel" id="setup-panel-ops">
+      <div class="panel-buttons">
+        <button class="calc-btn special" onclick="insertSetup('√')">√</button>
+        <button class="calc-btn special" onclick="insertSetup('⁴')">⁴</button>
+        <button class="calc-btn special" onclick="insertSetup('⁵')">⁵</button>
+        <button class="calc-btn special" onclick="insertSetup('⁶')">⁶</button>
+        <button class="calc-btn special" onclick="insertSetup('⁷')">⁷</button>
+        <button class="calc-btn special" onclick="insertSetup('⁸')">⁸</button>
+        <button class="calc-btn special" onclick="insertSetup('⁹')">⁹</button>
+        <button class="calc-btn op" onclick="insertSetup(' = ')">=</button>
+        <button class="calc-btn op" onclick="insertSetup(' ≠ ')">≠</button>
+        <button class="calc-btn op" onclick="insertSetup(' ≤ ')">≤</button>
+        <button class="calc-btn op" onclick="insertSetup(' ≥ ')">≥</button>
+        <button class="calc-btn op" onclick="insertSetup(' ± ')">±</button>
+      </div>
+    </div>
+
+    <!-- Panel: greek -->
+    <div class="calc-panel" id="setup-panel-greek">
+      <div class="panel-buttons">
+        <button class="calc-btn special" onclick="insertSetup('α')">α</button>
+        <button class="calc-btn special" onclick="insertSetup('β')">β</button>
+        <button class="calc-btn special" onclick="insertSetup('θ')">θ</button>
+        <button class="calc-btn special" onclick="insertSetup('π')">π</button>
+        <button class="calc-btn special" onclick="insertSetup('Δ')">Δ</button>
+        <button class="calc-btn special" onclick="insertSetup('λ')">λ</button>
+        <button class="calc-btn special" onclick="insertSetup('μ')">μ</button>
+      </div>
+    </div>
   </div>
+  <!-- end setup-calc-wrapper -->
+
+  <div class="format-hint">
+    Tap a Question or Answer field, then use the calculator to insert math symbols into that field.
+  </div>
+  <div class="setup-error" id="setup-error"></div>
 
   <button class="btn-primary" onclick="generateLink()">Generate Student Link</button>
 </div>
@@ -802,7 +874,7 @@ A: 10x - 6"></textarea>
   </div>
 
   <div class="problem-card">
-    <div class="problem-label">Problem <span id="problem-number"></span></div>
+    <div class="problem-label" id="problem-label">Problem <span id="problem-number"></span></div>
     <div class="problem-text" id="problem-text"></div>
   </div>
 
@@ -815,7 +887,8 @@ A: 10x - 6"></textarea>
   </div>
 
   <div id="input-area">
-    <input type="text" id="step-input" placeholder="Type or tap buttons to enter your answer…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    <input type="text" id="step-input" placeholder="Type or tap buttons to enter your answer…"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
 
     <!-- Student Calculator Grid (with Check button) -->
     <div class="calc-wrapper" id="calc-grid">
@@ -874,8 +947,8 @@ A: 10x - 6"></textarea>
 
       <!-- Toggle buttons -->
       <div class="calc-toggles">
-        <button class="toggle-btn" id="student-toggle-abc" onclick="togglePanel('student', 'abc')">abc</button>
-        <button class="toggle-btn" id="student-toggle-ops" onclick="togglePanel('student', 'ops')">ops</button>
+        <button class="toggle-btn" id="student-toggle-abc"   onclick="togglePanel('student', 'abc')">abc</button>
+        <button class="toggle-btn" id="student-toggle-ops"   onclick="togglePanel('student', 'ops')">ops</button>
         <button class="toggle-btn" id="student-toggle-greek" onclick="togglePanel('student', 'greek')">αβ</button>
       </div>
 
@@ -961,7 +1034,6 @@ A: 10x - 6"></textarea>
 
 <script>
   // ══════════════════════════════════════════════════
-  // REPLACE THIS WITH YOUR RAILWAY DEPLOYMENT URL:
   const PROXY_URL = 'https://math-practice-production-b96e.up.railway.app';
   // ══════════════════════════════════════════════════
 
@@ -974,10 +1046,186 @@ A: 10x - 6"></textarea>
   let askRonelProblems = [];
   let generatedLink = '';
 
+  // ── Teacher: active field tracking ──
+  let activeSetupField = null;
+  let activeSetupCursor = { start: 0, end: 0 };
+  let cardCounter = 0;
+
+  function setActiveField(el) {
+    if (activeSetupField && activeSetupField !== el) {
+      activeSetupField.classList.remove('active-field');
+    }
+    activeSetupField = el;
+    el.classList.add('active-field');
+    activeSetupCursor = { start: el.selectionStart, end: el.selectionEnd };
+  }
+
+  function updateSetupCursor(el) {
+    if (activeSetupField === el) {
+      activeSetupCursor = { start: el.selectionStart, end: el.selectionEnd };
+    }
+  }
+
+  // ── Add a problem card ──
+  function addProblemCard(type, question, answer) {
+    type = type || 'Expand';
+    question = question || '';
+    answer = answer || '';
+
+    const id = cardCounter++;
+    const card = document.createElement('div');
+    card.className = 'builder-card';
+    card.id = `card-${id}`;
+    card.innerHTML = `
+      <div class="builder-card-header">
+        <span class="builder-card-title">Problem</span>
+        <button class="builder-delete-btn" onclick="deleteProblemCard(${id})" title="Delete">🗑️</button>
+      </div>
+      <div class="builder-field">
+        <label class="builder-field-label">Type</label>
+        <select class="builder-type-select">
+          <option value="Expand">Expand</option>
+          <option value="Factorize">Factorize</option>
+          <option value="Simplify">Simplify</option>
+          <option value="Solve">Solve</option>
+        </select>
+      </div>
+      <div class="builder-field">
+        <label class="builder-field-label">Question</label>
+        <input type="text" class="builder-input builder-q-input"
+          placeholder="e.g. 3(2x + 5)"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
+      <div class="builder-field">
+        <label class="builder-field-label">Answer</label>
+        <input type="text" class="builder-input builder-a-input"
+          placeholder="e.g. 6x + 15"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
+    `;
+
+    // Set values programmatically (avoids HTML escaping issues)
+    card.querySelector('.builder-type-select').value = type;
+    card.querySelector('.builder-q-input').value = question;
+    card.querySelector('.builder-a-input').value = answer;
+
+    // Attach focus / cursor-tracking listeners to both text inputs
+    card.querySelectorAll('.builder-input').forEach(input => {
+      input.addEventListener('focus',  () => setActiveField(input));
+      input.addEventListener('click',  () => updateSetupCursor(input));
+      input.addEventListener('keyup',  () => updateSetupCursor(input));
+      input.addEventListener('blur',   () => updateSetupCursor(input));
+    });
+
+    document.getElementById('cards-container').appendChild(card);
+    renumberCards();
+
+    // Auto-focus the question field of the newly added card
+    const qInput = card.querySelector('.builder-q-input');
+    qInput.focus();
+    setActiveField(qInput);
+  }
+
+  // ── Delete a problem card ──
+  function deleteProblemCard(id) {
+    const card = document.getElementById(`card-${id}`);
+    if (!card) return;
+    // If deleted card held the active field, clear it
+    if (activeSetupField && card.contains(activeSetupField)) {
+      activeSetupField.classList.remove('active-field');
+      activeSetupField = null;
+    }
+    card.remove();
+    renumberCards();
+  }
+
+  // ── Renumber card titles after add/delete ──
+  function renumberCards() {
+    document.querySelectorAll('.builder-card').forEach((card, i) => {
+      card.querySelector('.builder-card-title').textContent = `Problem ${i + 1}`;
+    });
+  }
+
+  // ── Teacher calc: insert into active field ──
+  function insertSetup(symbol) {
+    if (!activeSetupField) return;
+    const el = activeSetupField;
+    const { start, end } = activeSetupCursor;
+    const val = el.value;
+    el.value = val.slice(0, start) + symbol + val.slice(end);
+    const newPos = start + symbol.length;
+    activeSetupCursor = { start: newPos, end: newPos };
+    el.focus();
+    el.setSelectionRange(newPos, newPos);
+  }
+
+  // ── Teacher calc: backspace on active field ──
+  function setupBackspace() {
+    if (!activeSetupField) return;
+    const el = activeSetupField;
+    let { start, end } = activeSetupCursor;
+    const val = el.value;
+    if (start === 0 && end === 0) return;
+    if (start !== end) {
+      el.value = val.slice(0, start) + val.slice(end);
+      activeSetupCursor = { start, end: start };
+    } else {
+      el.value = val.slice(0, start - 1) + val.slice(start);
+      start--;
+      activeSetupCursor = { start, end: start };
+    }
+    el.focus();
+    el.setSelectionRange(activeSetupCursor.start, activeSetupCursor.end);
+  }
+
+  // ── Generate link from cards ──
+  function generateLink() {
+    const err = document.getElementById('setup-error');
+    err.style.display = 'none';
+
+    const cards = document.querySelectorAll('.builder-card');
+    if (cards.length === 0) {
+      err.textContent = 'Please add at least one problem.';
+      err.style.display = 'block';
+      return;
+    }
+
+    const parsed = [];
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
+      const type     = card.querySelector('.builder-type-select').value;
+      const question = card.querySelector('.builder-q-input').value.trim();
+      const answer   = card.querySelector('.builder-a-input').value.trim();
+      if (!question || !answer) {
+        err.textContent = `Problem ${i + 1} is missing a ${!question ? 'question' : 'answer'}.`;
+        err.style.display = 'block';
+        return;
+      }
+      parsed.push({ type, question, answer });
+    }
+
+    const data = JSON.stringify({ problems: parsed });
+    const encoded = btoa(encodeURIComponent(data));
+    const baseUrl = window.location.href.split('#')[0];
+    generatedLink = baseUrl + '#' + encoded;
+
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('link-screen').style.display = 'block';
+    document.getElementById('link-box').textContent = generatedLink;
+
+    const ul = document.getElementById('summary-list');
+    ul.innerHTML = '';
+    parsed.forEach((p, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('data-num', (i + 1) + '.');
+      li.textContent = `[${p.type}] ${p.question}`;
+      ul.appendChild(li);
+    });
+  }
+
   // ── Normalize input for Algebrite ──
   function normalize(input) {
     let s = input.trim();
-    // Unicode superscripts → ^n
     s = s.replace(/²/g, '^2');
     s = s.replace(/³/g, '^3');
     s = s.replace(/⁴/g, '^4');
@@ -986,28 +1234,22 @@ A: 10x - 6"></textarea>
     s = s.replace(/⁷/g, '^7');
     s = s.replace(/⁸/g, '^8');
     s = s.replace(/⁹/g, '^9');
-    // Unicode operators
     s = s.replace(/×/g, '*');
     s = s.replace(/−/g, '-');
-    // Protect "sqrt" from implicit-mult mangling (non-letter placeholder \x01)
     s = s.replace(/sqrt/gi, '\x01');
-    // √ notation → placeholder
     s = s.replace(/√\(/g, '\x01(');
     s = s.replace(/√(\d+)/g, '\x01($1)');
     s = s.replace(/√([a-zA-Z])/g, '\x01($1)');
-    // Insert * before sqrt placeholder where needed
     s = s.replace(/(\d)\x01/g, '$1*\x01');
     s = s.replace(/\)\x01/g, ')*\x01');
     s = s.replace(/([a-zA-Z])\x01/g, '$1*\x01');
-    // Insert implicit multiplication
-    s = s.replace(/(\d)([a-zA-Z])/g, '$1*$2');       // 2x → 2*x
-    s = s.replace(/([a-zA-Z])([a-zA-Z])/g, '$1*$2'); // pq → p*q
-    s = s.replace(/(\d)\(/g, '$1*(');                 // 4( → 4*(
-    s = s.replace(/\)\(/g, ')*(');                    // )( → )*(
-    s = s.replace(/([a-zA-Z])\(/g, '$1*(');           // x( → x*(
-    s = s.replace(/\)([a-zA-Z])/g, ')*$1');           // )x → )*x
-    s = s.replace(/\)(\d)/g, ')*$1');                 // )2 → )*2
-    // Restore sqrt
+    s = s.replace(/(\d)([a-zA-Z])/g, '$1*$2');
+    s = s.replace(/([a-zA-Z])([a-zA-Z])/g, '$1*$2');
+    s = s.replace(/(\d)\(/g, '$1*(');
+    s = s.replace(/\)\(/g, ')*(');
+    s = s.replace(/([a-zA-Z])\(/g, '$1*(');
+    s = s.replace(/\)([a-zA-Z])/g, ')*$1');
+    s = s.replace(/\)(\d)/g, ')*$1');
     s = s.replace(/\x01/g, 'sqrt');
     return s;
   }
@@ -1030,19 +1272,17 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Check if student's step equals the expected final answer ──
   function checkIsFinal(studentStep, expectedAnswer) {
     return checkEquivalence(studentStep, expectedAnswer);
   }
 
-  // ── Extract the algebraic expression from a question (strip instruction verb) ──
   function extractExpression(questionText) {
     return questionText
       .replace(/^(expand and simplify|expand|factorise|factorize|simplify|solve|evaluate|find|calculate)\s+/i, '')
       .trim();
   }
 
-  // ── Ask Claude to interpret unparseable input ──
+  // ── Ask Claude helpers ──
   async function askClaudeToInterpret(input) {
     try {
       const response = await fetch(PROXY_URL + '/validate', {
@@ -1056,12 +1296,9 @@ A: 10x - 6"></textarea>
       if (!response.ok) return null;
       const data = await response.json();
       return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
-  // ── Ask Claude for a hint ──
   async function askClaudeForHint(problem, history, currentExpr, wrongInput) {
     try {
       const stepsText = history.length > 0
@@ -1074,37 +1311,35 @@ A: 10x - 6"></textarea>
           system: "You are a warm, encouraging math tutor for a 7th grade student. The student made an error. Give a small hint pointing toward the error without revealing the correct answer. Keep it to 1-2 sentences.",
           messages: [{
             role: 'user',
-            content: `Problem: ${problem.question}\nExpected answer: ${problem.answer}\n\n${stepsText}Current expression: ${currentExpr}\nStudent wrote (incorrect): ${wrongInput}\n\nGive a gentle hint.`
+            content: `Problem type: ${problem.type || 'unknown'}\nProblem: ${problem.question}\nExpected answer: ${problem.answer}\n\n${stepsText}Current expression: ${currentExpr}\nStudent wrote (incorrect): ${wrongInput}\n\nGive a gentle hint.`
           }]
         })
       });
       if (!response.ok) return null;
       const data = await response.json();
       return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
-  // ── Ask Claude to check if student's answer is in the correct structural form ──
-  async function askClaudeFormCheck(studentStep, expectedAnswer) {
-    console.log('FORM CHECK CALLED', { studentStep, expectedAnswer, formCheckAttempts });
+  async function askClaudeFormCheck(studentStep, expectedAnswer, problemType) {
+    console.log('FORM CHECK CALLED', { studentStep, expectedAnswer, problemType, formCheckAttempts });
     let hintInstruction;
     if (formCheckAttempts === 0) {
       hintInstruction = "Respond with feedback like 'Correct so far, keep simplifying!' — do NOT mention what to factor out or what the answer looks like.";
     } else if (formCheckAttempts === 1) {
-      hintInstruction = "Give a slightly more specific hint about what direction to go, like 'Look for common factors you can still take out.' Do NOT reveal the final form.";
+      hintInstruction = "Give a slightly more specific hint about what direction to go. Do NOT reveal the final form.";
     } else if (formCheckAttempts === 2) {
-      hintInstruction = "Give a more direct hint, like 'Try factoring out [type of factor] from the terms.' Still do NOT show the final answer.";
+      hintInstruction = "Give a more direct hint about what operation to apply. Still do NOT show the final answer.";
     } else {
       hintInstruction = "Show the expected form clearly.";
     }
     try {
+      const typeContext = problemType ? `The problem type is: ${problemType}. ` : '';
       const response = await fetch(PROXY_URL + '/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system: `The teacher expects the answer in this form: ${expectedAnswer}. The student wrote: ${studentStep}. Both are mathematically equivalent (already verified). Is the student's answer in the SAME STRUCTURAL FORM as the teacher's? Same level of factoring, same grouping, same simplification level. ${hintInstruction} Respond with ONLY a JSON object: { "match": true/false, "feedback": "brief message if no match" }`,
+          system: `${typeContext}The teacher expects the answer in this form: ${expectedAnswer}. The student wrote: ${studentStep}. Both are mathematically equivalent (already verified). Is the student's answer in the SAME STRUCTURAL FORM as the teacher's? Same level of factoring, same grouping, same simplification level. ${hintInstruction} Respond with ONLY a JSON object: { "match": true/false, "feedback": "brief message if no match" }`,
           messages: [{ role: 'user', content: `Teacher's expected form: ${expectedAnswer}\nStudent's answer: ${studentStep}` }]
         })
       });
@@ -1121,7 +1356,6 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Ask Claude to reveal the next step ──
   async function askClaudeForReveal(problem, history, currentExpr) {
     try {
       const stepsText = history.length > 0
@@ -1134,16 +1368,14 @@ A: 10x - 6"></textarea>
           system: "You are a math tutor for a 7th grade student. The student is struggling. Return ONLY the algebraic expression for a valid next step from their current position. Nothing else — no explanation, just the expression.",
           messages: [{
             role: 'user',
-            content: `Problem: ${problem.question}\nExpected answer: ${problem.answer}\n\n${stepsText}Current expression: ${currentExpr}\n\nWhat is a valid next step? Return only the expression.`
+            content: `Problem type: ${problem.type || 'unknown'}\nProblem: ${problem.question}\nExpected answer: ${problem.answer}\n\n${stepsText}Current expression: ${currentExpr}\n\nWhat is a valid next step? Return only the expression.`
           }]
         })
       });
       if (!response.ok) return null;
       const data = await response.json();
       return data.content.map(c => c.text || '').join('').trim() || null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   // ── Loading indicator helpers ──
@@ -1161,7 +1393,7 @@ A: 10x - 6"></textarea>
     document.getElementById('calc-grid').classList.remove('disabled');
   }
 
-  // ── Check if URL has problem data (student mode) ──
+  // ── Boot: check URL for student data, else show teacher setup ──
   function init() {
     const hash = window.location.hash.slice(1);
     if (hash) {
@@ -1178,66 +1410,16 @@ A: 10x - 6"></textarea>
         console.error('Failed to parse problem data from URL:', e);
       }
     }
+    // Teacher mode: show setup with one empty card
     document.getElementById('setup-screen').style.display = 'block';
-  }
-
-  // ── Parse Q:/A: format ──
-  function parseProblems(text) {
-    const blocks = text.trim().split(/\n\s*\n/);
-    const parsed = [];
-    for (const block of blocks) {
-      const lines = block.trim().split('\n').map(l => l.trim());
-      let q = '', a = '';
-      for (const line of lines) {
-        if (/^Q:\s*/i.test(line)) q = line.replace(/^Q:\s*/i, '').trim();
-        else if (/^A:\s*/i.test(line)) a = line.replace(/^A:\s*/i, '').trim();
-      }
-      if (q && a) parsed.push({ question: q, answer: a });
-    }
-    return parsed;
-  }
-
-  // ── Generate link ──
-  function generateLink() {
-    const raw = document.getElementById('problems-input').value.trim();
-    const err = document.getElementById('setup-error');
-    err.style.display = 'none';
-
-    if (!raw) { err.textContent = 'Please enter at least one problem.'; err.style.display = 'block'; return; }
-
-    const parsed = parseProblems(raw);
-    if (parsed.length === 0) {
-      err.textContent = 'Could not parse any problems. Use the Q:/A: format.';
-      err.style.display = 'block';
-      return;
-    }
-
-    const data = JSON.stringify({ problems: parsed });
-    const encoded = btoa(encodeURIComponent(data));
-    const baseUrl = window.location.href.split('#')[0];
-    generatedLink = baseUrl + '#' + encoded;
-
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('link-screen').style.display = 'block';
-    document.getElementById('link-box').textContent = generatedLink;
-
-    const ul = document.getElementById('summary-list');
-    ul.innerHTML = '';
-    parsed.forEach((p, i) => {
-      const li = document.createElement('li');
-      li.setAttribute('data-num', (i + 1) + '.');
-      li.textContent = p.question;
-      ul.appendChild(li);
-    });
+    addProblemCard();
   }
 
   // ── Copy link ──
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(generatedLink);
-      const toast = document.getElementById('copy-toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+      showCopyToast();
     } catch (e) {
       const ta = document.createElement('textarea');
       ta.value = generatedLink;
@@ -1245,19 +1427,22 @@ A: 10x - 6"></textarea>
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      const toast = document.getElementById('copy-toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+      showCopyToast();
     }
   }
 
-  // ── Preview as student ──
+  function showCopyToast() {
+    const toast = document.getElementById('copy-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
   function previewAsStudent() {
     window.location.href = generatedLink;
     window.location.reload();
   }
 
-  // ── Load a problem ──
+  // ── Load a problem (student) ──
   function loadProblem(index) {
     currentIndex = index;
     stepHistory = [];
@@ -1265,7 +1450,8 @@ A: 10x - 6"></textarea>
     formCheckAttempts = 0;
 
     const p = problems[index];
-    document.getElementById('problem-number').textContent = `${index + 1} of ${problems.length}`;
+    const typeStr = p.type ? ` · ${p.type}` : '';
+    document.getElementById('problem-label').textContent = `Problem ${index + 1} of ${problems.length}${typeStr}`;
     document.getElementById('problem-text').textContent = p.question;
     document.getElementById('steps-container').innerHTML = '';
     document.getElementById('feedback').className = 'feedback';
@@ -1276,12 +1462,11 @@ A: 10x - 6"></textarea>
     document.getElementById('input-area').style.display = 'flex';
     clearDisplay();
     document.getElementById('calc-grid').classList.remove('disabled');
-    // Close any open panels
-    ['abc', 'ops', 'greek'].forEach(p => {
-      const panel = document.getElementById(`student-panel-${p}`);
-      const btn = document.getElementById(`student-toggle-${p}`);
+    ['abc', 'ops', 'greek'].forEach(n => {
+      const panel = document.getElementById(`student-panel-${n}`);
+      const btn   = document.getElementById(`student-toggle-${n}`);
       if (panel) panel.style.display = 'none';
-      if (btn) btn.classList.remove('active');
+      if (btn)   btn.classList.remove('active');
     });
     updateProgress();
   }
@@ -1293,7 +1478,7 @@ A: 10x - 6"></textarea>
     document.getElementById('progress-fill').style.width = `${(current / total) * 100}%`;
   }
 
-  // ── Submit step ──
+  // ── Submit step (student) ──
   async function submitStep() {
     const input = document.getElementById('step-input').value.trim();
     if (!input) return;
@@ -1312,7 +1497,6 @@ A: 10x - 6"></textarea>
 
     let equiv = checkEquivalence(previousExpression, input);
 
-    // Parse error — ask Claude to interpret the input
     if (equiv.valid === null) {
       showLoading('Interpreting your input...');
       const interpreted = await askClaudeToInterpret(input);
@@ -1326,7 +1510,6 @@ A: 10x - 6"></textarea>
     }
 
     if (equiv.valid === true) {
-      // Valid step — check if it's the final answer
       wrongCount = 0;
       stepHistory.push(input);
       addStepToHistory(input);
@@ -1334,32 +1517,27 @@ A: 10x - 6"></textarea>
 
       const isFinal = checkIsFinal(input, problem.answer);
       if (isFinal.valid === true) {
-        // Algebrite confirmed equivalence to final answer — now check structural form via Claude
         showLoading('Checking answer form...');
-        const formCheck = await askClaudeFormCheck(input, problem.answer);
+        const formCheck = await askClaudeFormCheck(input, problem.answer, problem.type);
         hideLoading();
 
         if (formCheck === null || formCheck.match === true) {
-          // Accept: Claude agrees on form, or we couldn't reach Claude
           document.getElementById('input-area').style.display = 'none';
           document.getElementById('completed-card').style.display = 'block';
           document.getElementById('next-problem-btn').style.display = 'block';
           document.getElementById('next-problem-btn').textContent =
             currentIndex < problems.length - 1 ? 'Next Problem →' : 'Finish ✓';
         } else {
-          // Wrong form — show Claude's feedback, let student keep going
           formCheckAttempts++;
           showFeedback('nudge', formCheck.feedback || 'Correct value, but try to simplify or factor further!');
           clearDisplay();
           reenableInput();
         }
       } else {
-        // Correct intermediate step — keep going
         clearDisplay();
         reenableInput();
       }
     } else {
-      // Invalid step
       wrongCount++;
       clearDisplay();
 
@@ -1382,7 +1560,7 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Calculator input (student screen) ──
+  // ── Student calculator input ──
   function insertMath(symbol) {
     const el = document.getElementById('step-input');
     const start = el.selectionStart;
@@ -1392,7 +1570,6 @@ A: 10x - 6"></textarea>
     const newPos = start + symbol.length;
     el.setSelectionRange(newPos, newPos);
     el.focus();
-    // Sync chunks with current value
     inputChunks = Array.from(el.value);
   }
 
@@ -1402,9 +1579,7 @@ A: 10x - 6"></textarea>
       document.getElementById('step-input').value = inputChunks.join('');
     } else {
       const el = document.getElementById('step-input');
-      if (el.value.length > 0) {
-        el.value = el.value.slice(0, -1);
-      }
+      if (el.value.length > 0) el.value = el.value.slice(0, -1);
     }
   }
 
@@ -1413,7 +1588,7 @@ A: 10x - 6"></textarea>
     document.getElementById('step-input').value = '';
   }
 
-  // ── Sync inputChunks when user types via keyboard ──
+  // Sync inputChunks when student types via keyboard
   document.addEventListener('DOMContentLoaded', function() {
     const stepInput = document.getElementById('step-input');
     if (stepInput) {
@@ -1423,45 +1598,11 @@ A: 10x - 6"></textarea>
     }
   });
 
-  // ── Setup screen: cursor-aware insert (teacher uses keyboard) ──
-  function insertSetup(symbol) {
-    const input = document.getElementById('problems-input');
-    insertAt(input, symbol);
-  }
-
-  function insertAt(el, symbol) {
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const val = el.value;
-    el.value = val.slice(0, start) + symbol + val.slice(end);
-    const newPos = start + symbol.length;
-    el.setSelectionRange(newPos, newPos);
-    el.focus();
-  }
-
-  // ── Setup screen: backspace button ──
-  function setupBackspace() {
-    const el = document.getElementById('problems-input');
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const val = el.value;
-    if (start === 0 && end === 0) return;
-    if (start !== end) {
-      el.value = val.slice(0, start) + val.slice(end);
-      el.setSelectionRange(start, start);
-    } else {
-      el.value = val.slice(0, start - 1) + val.slice(start);
-      el.setSelectionRange(start - 1, start - 1);
-    }
-    el.focus();
-  }
-
   // ── Toggle expandable panels ──
   function togglePanel(prefix, name) {
-    const panels = ['abc', 'ops', 'greek'];
-    panels.forEach(p => {
+    ['abc', 'ops', 'greek'].forEach(p => {
       const panel = document.getElementById(`${prefix}-panel-${p}`);
-      const btn = document.getElementById(`${prefix}-toggle-${p}`);
+      const btn   = document.getElementById(`${prefix}-toggle-${p}`);
       if (!panel || !btn) return;
       if (p === name) {
         const nowOpen = panel.style.display !== 'block';
@@ -1515,7 +1656,7 @@ A: 10x - 6"></textarea>
     }
   }
 
-  // ── Enter key (desktop convenience) ──
+  // Enter key submits on student screen
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.getElementById('practice-screen').style.display !== 'none') {
       if (!document.getElementById('calc-grid').classList.contains('disabled')) submitStep();
