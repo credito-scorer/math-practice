@@ -242,6 +242,32 @@
   }
 
   hr { border: none; border-top: 1.5px solid var(--border); margin: 8px 0 16px; }
+
+  /* Student selector */
+  .student-selector { display: flex; flex-direction: column; gap: 6px; }
+
+  .student-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+
+  .student-selector-row:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .student-selector-row.active { border-color: var(--accent); background: var(--accent-bg); }
+
+  .student-selector-row .s-name { flex: 1; font-size: 0.92rem; font-weight: 600; }
+  .student-selector-row .s-id   { font-family: var(--mono); font-size: 0.72rem; color: var(--text-secondary); }
+
+  .student-selector-row.new-student { border-style: dashed; color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+
+  .selector-note { color: var(--text-secondary); font-size: 0.82rem; font-style: italic; }
 </style>
 </head>
 <body>
@@ -260,6 +286,14 @@
 <div id="main-app" class="container" style="display:none;">
   <h1>Teacher Dashboard</h1>
   <p class="subtitle">Manage student problem lists</p>
+
+  <!-- Student selector -->
+  <div class="card">
+    <div class="card-title">All Students</div>
+    <div id="student-selector-list" class="student-selector">
+      <div class="selector-note">Loading…</div>
+    </div>
+  </div>
 
   <!-- Step 1: Select/create student -->
   <div class="card">
@@ -329,6 +363,7 @@
 
   let teacherSecret = '';
   let currentProblems = []; // local working copy
+  let selectedStudentId = null;
 
   // ── Auth ──────────────────────────────────────────────────────
   function handleAuth() {
@@ -349,6 +384,7 @@
   function showApp() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
+    loadStudentList();
   }
 
   // Restore from session on load
@@ -359,6 +395,61 @@
       showApp();
     }
   });
+
+  // ── Student selector ──────────────────────────────────────────
+  async function loadStudentList() {
+    const list = document.getElementById('student-selector-list');
+    list.innerHTML = '<div class="selector-note">Loading…</div>';
+    try {
+      const res = await fetch(`${WORKER}/students`, {
+        headers: { 'Authorization': `Bearer ${teacherSecret}` }
+      });
+      if (!res.ok) throw new Error();
+      const students = await res.json();
+      list.innerHTML = renderSelectorRows(students);
+    } catch {
+      list.innerHTML = '<div class="selector-note" style="color:var(--wrong)">Could not load student list.</div>' + renderNewStudentRow();
+    }
+  }
+
+  function renderSelectorRows(students) {
+    const rows = students.map(s => `
+      <div class="student-selector-row${selectedStudentId === s.id ? ' active' : ''}"
+           id="srow-${escHtml(s.id)}"
+           onclick="selectStudent('${escHtml(s.id)}', '${escHtml(s.name)}')">
+        <span class="s-name">${escHtml(s.name)}</span>
+        <span class="s-id">${escHtml(s.id)}</span>
+      </div>`).join('');
+    return rows + renderNewStudentRow();
+  }
+
+  function renderNewStudentRow() {
+    return `<div class="student-selector-row new-student${selectedStudentId === null ? ' active' : ''}" onclick="newStudent()">+ New Student</div>`;
+  }
+
+  async function selectStudent(id, name) {
+    selectedStudentId = id;
+    document.getElementById('student-id').value = id;
+    document.getElementById('student-name').value = name;
+    document.querySelectorAll('.student-selector-row').forEach(el => el.classList.remove('active'));
+    const row = document.getElementById(`srow-${id}`);
+    if (row) row.classList.add('active');
+    await loadStudent();
+  }
+
+  function newStudent() {
+    selectedStudentId = null;
+    document.getElementById('student-id').value = '';
+    document.getElementById('student-name').value = '';
+    currentProblems = [];
+    renderProblems();
+    document.getElementById('load-status').style.display = 'none';
+    document.getElementById('save-status').style.display = 'none';
+    document.getElementById('dashboard-card').style.display = 'none';
+    document.querySelectorAll('.student-selector-row').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.student-selector-row.new-student').forEach(el => el.classList.add('active'));
+    document.getElementById('student-id').focus();
+  }
 
   // ── Load existing student ──────────────────────────────────────
   async function loadStudent() {
@@ -467,6 +558,8 @@
 
       showStatus('save-status', 'ok', `Saved! ${currentProblems.length} problem(s) for ${name}.`);
       updateDashboardLink(id);
+      selectedStudentId = id;
+      loadStudentList();
     } catch {
       showStatus('save-status', 'err', 'Save failed. Check your connection.');
     } finally {
