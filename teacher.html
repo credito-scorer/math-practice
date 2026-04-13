@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #FAFAF8;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --border: #E8E8E4;
+    --accent: #2D6A4F;
+    --accent-light: #D8F3DC;
+    --accent-bg: #F0FAF3;
+    --wrong: #C1453B;
+    --wrong-bg: #FDE8E6;
+    --sans: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container { max-width: 600px; width: 100%; }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    margin-bottom: 28px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  /* Form fields */
+  .field { margin-bottom: 12px; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="text"], input[type="url"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus, input[type="url"]:focus {
+    border-color: var(--accent);
+  }
+
+  input[type="url"] {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-danger { background: var(--wrong-bg); color: var(--wrong); border: 1px solid #f0b0aa; }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  /* Problem list */
+  .problem-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+
+  .problem-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .problem-item .pid {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .problem-item .ptitle {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .problem-item .done-badge {
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+
+  .problem-item.completed .done-badge { background: var(--accent-light); color: var(--accent); }
+  .problem-item.pending .done-badge   { background: #EDF4FF; color: #4A90D9; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1A1A1A;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Status message */
+  .status-msg {
+    font-size: 0.82rem;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+
+  .status-msg.ok  { background: var(--accent-bg); color: var(--accent); }
+  .status-msg.err { background: var(--wrong-bg); color: var(--wrong); }
+
+  /* Auth screen */
+  #auth-screen {
+    margin-top: 80px;
+    text-align: center;
+  }
+
+  #auth-screen .lock-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  #auth-screen h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+  #auth-screen p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+
+  #auth-input {
+    width: 260px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: var(--mono);
+    outline: none;
+    display: block;
+    margin: 0 auto 12px;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  #auth-input:focus { border-color: var(--accent); }
+
+  .auth-error {
+    color: var(--wrong);
+    font-size: 0.82rem;
+    min-height: 1.2em;
+    margin-bottom: 8px;
+  }
+
+  hr { border: none; border-top: 1.5px solid var(--border); margin: 8px 0 16px; }
+</style>
+</head>
+<body>
+
+<!-- Auth screen -->
+<div id="auth-screen" class="container">
+  <div class="lock-icon">🔒</div>
+  <h2>Teacher Login</h2>
+  <p>Enter your teacher password to continue.</p>
+  <input type="password" id="auth-input" placeholder="Password" autocomplete="current-password">
+  <div class="auth-error" id="auth-error"></div>
+  <button class="btn btn-primary" onclick="handleAuth()">Unlock</button>
+</div>
+
+<!-- Main app (hidden until auth) -->
+<div id="main-app" class="container" style="display:none;">
+  <h1>Teacher Dashboard</h1>
+  <p class="subtitle">Manage student problem lists</p>
+
+  <!-- Step 1: Select/create student -->
+  <div class="card">
+    <div class="card-title">Student</div>
+    <div class="field">
+      <label>Student ID</label>
+      <input type="text" id="student-id" placeholder="e.g. sofia" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Student Name</label>
+      <input type="text" id="student-name" placeholder="e.g. Sofia" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="loadStudent()">Load existing student</button>
+    </div>
+    <div id="load-status" class="status-msg" style="display:none;"></div>
+  </div>
+
+  <!-- Step 2: Add problem -->
+  <div class="card">
+    <div class="card-title">Add Problem</div>
+    <div class="field">
+      <label>Problem ID</label>
+      <input type="text" id="new-pid" placeholder="e.g. p1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="new-title" placeholder="e.g. Expanding brackets" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>URL (homework link)</label>
+      <input type="url" id="new-url" placeholder="https://credito-scorer.github.io/math-practice/#...">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addProblem()">Add to list</button>
+    </div>
+  </div>
+
+  <!-- Current problem list -->
+  <div class="card">
+    <div class="card-title">Current Problem List</div>
+    <div id="problems-empty" style="color:var(--text-secondary);font-size:0.88rem;">No problems yet.</div>
+    <div class="problem-list" id="problems-display"></div>
+    <hr>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveStudent()" id="save-btn">Save to student</button>
+    </div>
+    <div id="save-status" class="status-msg" style="display:none;"></div>
+  </div>
+
+  <!-- Dashboard link -->
+  <div class="card" id="dashboard-card" style="display:none;">
+    <div class="card-title">Student Dashboard Link</div>
+    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px;">Share this link with the student:</p>
+    <code id="dashboard-link" style="font-family:var(--mono);font-size:0.78rem;word-break:break-all;color:var(--accent);"></code>
+    <div class="btn-row">
+      <button class="btn btn-secondary btn-sm" onclick="copyDashboardLink()">Copy link</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const WORKER = 'https://math-practice-proxy.ronelalmanza20.workers.dev';
+  const DASHBOARD_BASE = 'https://credito-scorer.github.io/math-practice/dashboard.html';
+
+  let teacherSecret = '';
+  let currentProblems = []; // local working copy
+
+  // ── Auth ──────────────────────────────────────────────────────
+  function handleAuth() {
+    const val = document.getElementById('auth-input').value.trim();
+    if (!val) {
+      document.getElementById('auth-error').textContent = 'Please enter a password.';
+      return;
+    }
+    teacherSecret = val;
+    sessionStorage.setItem('teacherSecret', val);
+    showApp();
+  }
+
+  document.getElementById('auth-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuth();
+  });
+
+  function showApp() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+  }
+
+  // Restore from session on load
+  window.addEventListener('load', () => {
+    const saved = sessionStorage.getItem('teacherSecret');
+    if (saved) {
+      teacherSecret = saved;
+      showApp();
+    }
+  });
+
+  // ── Load existing student ──────────────────────────────────────
+  async function loadStudent() {
+    const id = document.getElementById('student-id').value.trim();
+    if (!id) { showStatus('load-status', 'err', 'Enter a student ID first.'); return; }
+
+    showStatus('load-status', 'ok', 'Loading…');
+    try {
+      const res = await fetch(`${WORKER}/student/${encodeURIComponent(id)}`);
+      if (res.status === 404) {
+        showStatus('load-status', 'ok', 'No existing data — starting fresh.');
+        currentProblems = [];
+        renderProblems();
+        return;
+      }
+      if (!res.ok) throw new Error('Server error');
+      const student = await res.json();
+      document.getElementById('student-name').value = student.name || '';
+      currentProblems = student.problems || [];
+      renderProblems();
+      showStatus('load-status', 'ok', `Loaded ${currentProblems.length} problem(s).`);
+      updateDashboardLink(id);
+    } catch {
+      showStatus('load-status', 'err', 'Failed to load. Check your connection.');
+    }
+  }
+
+  // ── Add a problem to local list ────────────────────────────────
+  function addProblem() {
+    const pid   = document.getElementById('new-pid').value.trim();
+    const title = document.getElementById('new-title').value.trim();
+    const url   = document.getElementById('new-url').value.trim();
+
+    if (!pid || !title || !url) {
+      showToast('Please fill in ID, title, and URL.');
+      return;
+    }
+    if (currentProblems.find(p => p.id === pid)) {
+      showToast(`Problem ID "${pid}" already exists.`);
+      return;
+    }
+
+    currentProblems.push({ id: pid, title, url, completed: false });
+    renderProblems();
+
+    document.getElementById('new-pid').value = '';
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-url').value = '';
+    document.getElementById('new-pid').focus();
+  }
+
+  function removeProblem(pid) {
+    currentProblems = currentProblems.filter(p => p.id !== pid);
+    renderProblems();
+  }
+
+  function renderProblems() {
+    const list = document.getElementById('problems-display');
+    const empty = document.getElementById('problems-empty');
+
+    if (currentProblems.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    list.innerHTML = currentProblems.map(p => `
+      <div class="problem-item ${p.completed ? 'completed' : 'pending'}">
+        <span class="pid">${escHtml(p.id)}</span>
+        <span class="ptitle" title="${escHtml(p.title)}">${escHtml(p.title)}</span>
+        <span class="done-badge">${p.completed ? '✅ done' : '🔵 todo'}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeProblem('${escHtml(p.id)}')">Remove</button>
+      </div>`).join('');
+  }
+
+  // ── Save to worker ─────────────────────────────────────────────
+  async function saveStudent() {
+    const id   = document.getElementById('student-id').value.trim();
+    const name = document.getElementById('student-name').value.trim();
+
+    if (!id || !name) {
+      showStatus('save-status', 'err', 'Enter both student ID and name.');
+      return;
+    }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    showStatus('save-status', 'ok', 'Saving…');
+
+    try {
+      const res = await fetch(`${WORKER}/student/${encodeURIComponent(id)}/problems`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${teacherSecret}`
+        },
+        body: JSON.stringify({ name, problems: currentProblems })
+      });
+
+      if (res.status === 401) {
+        showStatus('save-status', 'err', 'Wrong password. Try logging out and back in.');
+        return;
+      }
+      if (!res.ok) throw new Error('Server error');
+
+      showStatus('save-status', 'ok', `Saved! ${currentProblems.length} problem(s) for ${name}.`);
+      updateDashboardLink(id);
+    } catch {
+      showStatus('save-status', 'err', 'Save failed. Check your connection.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── Dashboard link ─────────────────────────────────────────────
+  function updateDashboardLink(studentId) {
+    const link = `${DASHBOARD_BASE}?student=${encodeURIComponent(studentId)}`;
+    document.getElementById('dashboard-link').textContent = link;
+    document.getElementById('dashboard-card').style.display = 'block';
+  }
+
+  async function copyDashboardLink() {
+    const link = document.getElementById('dashboard-link').textContent;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = link;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    showToast('Link copied!');
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────
+  function showStatus(id, type, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `status-msg ${type}`;
+    el.style.display = 'block';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+</script>
+</body>
+</html>

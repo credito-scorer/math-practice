@@ -1058,6 +1058,18 @@
   let askRonelProblems = [];
   let generatedLink = '';
 
+  // ── Dashboard tracking (optional — set from URL params ?student=X&pid=Y) ──
+  const _urlParams = new URLSearchParams(window.location.search);
+  const STUDENT_ID  = _urlParams.get('student') || null;
+  const PROBLEM_ID  = _urlParams.get('pid') || null;
+
+  function markProblemComplete() {
+    if (!STUDENT_ID || !PROBLEM_ID) return;
+    fetch(`${PROXY_URL}/student/${encodeURIComponent(STUDENT_ID)}/complete/${encodeURIComponent(PROBLEM_ID)}`, {
+      method: 'POST'
+    }).catch(() => {}); // fire-and-forget, ignore errors silently
+  }
+
   // ── Teacher: active field tracking ──
   let activeSetupField = null;
   let activeSetupCursor = { start: 0, end: 0 };
@@ -1671,6 +1683,7 @@
 
         if (formMatches) {
           console.log('[submitStep] problem complete — updating DOM');
+          markProblemComplete();
           document.getElementById('input-area').style.display = 'none';
           document.getElementById('completed-card').style.display = 'block';
           document.getElementById('next-problem-btn').style.display = 'block';
