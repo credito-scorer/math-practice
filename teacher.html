@@ -307,6 +307,11 @@
       <input type="text" id="student-name" placeholder="e.g. Sofia" autocomplete="off" autocorrect="off" spellcheck="false">
     </div>
     <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveProfile()" id="save-profile-btn">Save Student</button>
+    </div>
+    <div id="profile-status" class="status-msg" style="display:none;"></div>
+    <hr>
+    <div class="btn-row">
       <button class="btn btn-secondary" onclick="loadStudent()">Load existing student</button>
     </div>
     <div id="load-status" class="status-msg" style="display:none;"></div>
@@ -339,7 +344,7 @@
     <div class="problem-list" id="problems-display"></div>
     <hr>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveStudent()" id="save-btn">Save to student</button>
+      <button class="btn btn-primary" onclick="saveProblems()" id="save-btn">Save Problems</button>
     </div>
     <div id="save-status" class="status-msg" style="display:none;"></div>
   </div>
@@ -443,6 +448,7 @@
     document.getElementById('student-name').value = '';
     currentProblems = [];
     renderProblems();
+    document.getElementById('profile-status').style.display = 'none';
     document.getElementById('load-status').style.display = 'none';
     document.getElementById('save-status').style.display = 'none';
     document.getElementById('dashboard-card').style.display = 'none';
@@ -526,13 +532,53 @@
       </div>`).join('');
   }
 
-  // ── Save to worker ─────────────────────────────────────────────
-  async function saveStudent() {
+  // ── Save profile (name only) ───────────────────────────────────
+  async function saveProfile() {
     const id   = document.getElementById('student-id').value.trim();
     const name = document.getElementById('student-name').value.trim();
 
     if (!id || !name) {
-      showStatus('save-status', 'err', 'Enter both student ID and name.');
+      showStatus('profile-status', 'err', 'Enter both student ID and name.');
+      return;
+    }
+
+    const btn = document.getElementById('save-profile-btn');
+    btn.disabled = true;
+    showStatus('profile-status', 'ok', 'Saving…');
+
+    try {
+      const res = await fetch(`${WORKER}/student/${encodeURIComponent(id)}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${teacherSecret}`
+        },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.status === 401) {
+        showStatus('profile-status', 'err', 'Wrong password. Try logging out and back in.');
+        return;
+      }
+      if (!res.ok) throw new Error('Server error');
+
+      showStatus('profile-status', 'ok', `Student "${name}" saved.`);
+      updateDashboardLink(id);
+      selectedStudentId = id;
+      loadStudentList();
+    } catch {
+      showStatus('profile-status', 'err', 'Save failed. Check your connection.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── Save problems only ─────────────────────────────────────────
+  async function saveProblems() {
+    const id = document.getElementById('student-id').value.trim();
+
+    if (!id) {
+      showStatus('save-status', 'err', 'Enter a student ID first.');
       return;
     }
 
@@ -547,7 +593,7 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${teacherSecret}`
         },
-        body: JSON.stringify({ name, problems: currentProblems })
+        body: JSON.stringify({ problems: currentProblems })
       });
 
       if (res.status === 401) {
@@ -556,10 +602,8 @@
       }
       if (!res.ok) throw new Error('Server error');
 
-      showStatus('save-status', 'ok', `Saved! ${currentProblems.length} problem(s) for ${name}.`);
+      showStatus('save-status', 'ok', `${currentProblems.length} problem(s) saved.`);
       updateDashboardLink(id);
-      selectedStudentId = id;
-      loadStudentList();
     } catch {
       showStatus('save-status', 'err', 'Save failed. Check your connection.');
     } finally {
