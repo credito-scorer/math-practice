@@ -959,6 +959,34 @@
   function checkEquivalence(exprA, exprB, problemType) {
     const t0 = performance.now();
     console.log('[checkEquivalence] entry', { exprA, exprB, problemType });
+
+    // Handle comma-separated answers (e.g. multiple solutions: x = 1, x = -1)
+    const partsA = exprA.split(',').map(s => s.trim()).filter(Boolean);
+    const partsB = exprB.split(',').map(s => s.trim()).filter(Boolean);
+    if (partsA.length > 1 || partsB.length > 1) {
+      if (partsA.length !== partsB.length) {
+        console.log('[checkEquivalence] comma part count mismatch');
+        return { valid: false };
+      }
+      const usedB = new Set();
+      for (const pa of partsA) {
+        let matched = false;
+        for (let i = 0; i < partsB.length; i++) {
+          if (!usedB.has(i) && checkEquivalence(pa, partsB[i], problemType).valid === true) {
+            usedB.add(i);
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          console.log('[checkEquivalence] no match for comma part:', pa);
+          return { valid: false };
+        }
+      }
+      console.log(`[checkEquivalence] comma parts all matched in ${(performance.now()-t0).toFixed(1)}ms`);
+      return { valid: true };
+    }
+
     try {
       if (containsEquals(exprA) && containsEquals(exprB) && problemType !== 'Evaluate') {
         const result = equationEquivalence(exprA, exprB, problemType);

@@ -180,6 +180,7 @@
   <button class="toggle-btn" data-toggle="abc">abc</button>
   <button class="toggle-btn" data-toggle="ops">ops</button>
   <button class="toggle-btn" data-toggle="greek">αβ</button>
+  <button class="toggle-btn" data-toggle="ans">ans</button>
 </div>
 
 <div class="calc-panel" data-panel="abc">
@@ -233,6 +234,16 @@
     <button class="calc-btn special" data-insert="Δ">Δ</button>
     <button class="calc-btn special" data-insert="λ">λ</button>
     <button class="calc-btn special" data-insert="μ">μ</button>
+  </div>
+</div>
+
+<div class="calc-panel" data-panel="ans">
+  <div class="panel-buttons">
+    <button class="calc-btn op" data-insert="x = " style="flex:1 1 auto;">x =</button>
+    <button class="calc-btn op" data-insert="y = " style="flex:1 1 auto;">y =</button>
+    <button class="calc-btn op" data-insert=", " style="flex:1 1 auto;">,</button>
+    <button class="calc-btn op" data-insert="x = , x = " style="flex:1 1 100%;">x = N, x = N</button>
+    <button class="calc-btn op" data-insert="x =  or x = " style="flex:1 1 100%;">x = N or x = N</button>
   </div>
 </div>
 `;
