@@ -967,7 +967,7 @@
     const partsB = exprB.split(',').map(s => s.trim()).filter(Boolean);
     if (partsA.length > 1 || partsB.length > 1) {
       if (partsA.length !== partsB.length) {
-        console.log('[checkEquivalence] comma part count mismatch');
+        console.log('[checkEquivalence] comma part count mismatch', { partsA, partsB });
         return { valid: false };
       }
       const usedB = new Set();
