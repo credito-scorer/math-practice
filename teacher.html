@@ -318,30 +318,46 @@
     </div>
   </div>
 
-  <!-- Step 1: Select/create student -->
+  <!-- Student -->
   <div class="card">
     <div class="card-title">Student</div>
-    <div class="field">
-      <label>Student ID</label>
-      <input type="text" id="student-id" placeholder="e.g. sofia" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+    <!-- No student selected -->
+    <div id="student-placeholder">
+      <p style="color:var(--text-secondary);font-size:0.88rem;">Select a student from the list above to begin.</p>
     </div>
-    <div class="field">
-      <label>Student Name</label>
-      <input type="text" id="student-name" placeholder="e.g. Sofia" autocomplete="off" autocorrect="off" spellcheck="false">
+
+    <!-- Student selected: compact view -->
+    <div id="student-compact" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div>
+          <div id="compact-name" style="font-size:0.95rem;font-weight:600;"></div>
+          <div id="compact-id" style="font-size:0.75rem;color:var(--text-secondary);font-family:var(--mono);margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showEditForm()">Edit ✏️</button>
+      </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveProfile()" id="save-profile-btn">Save Student</button>
+
+    <!-- Full form: new student creation or editing existing -->
+    <div id="student-form" style="display:none;">
+      <div class="field">
+        <label>Student ID</label>
+        <input type="text" id="student-id" placeholder="e.g. sofia" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>Student Name</label>
+        <input type="text" id="student-name" placeholder="e.g. Sofia" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveProfile()" id="save-profile-btn">Save Student</button>
+        <button class="btn btn-secondary" id="cancel-edit-btn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+      </div>
+      <div id="profile-status" class="status-msg" style="display:none;"></div>
     </div>
-    <div id="profile-status" class="status-msg" style="display:none;"></div>
-    <hr>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="loadStudent()">Load existing student</button>
-    </div>
-    <div id="load-status" class="status-msg" style="display:none;"></div>
   </div>
 
   <!-- Step 2: Add problem -->
-  <div class="card">
+  <div class="card" id="add-problem-card" style="display:none;">
     <div class="card-title">Add Problem</div>
     <div class="field">
       <label>Type</label>
@@ -385,7 +401,7 @@
   </div>
 
   <!-- Current problem list -->
-  <div class="card">
+  <div class="card" id="problem-list-card" style="display:none;">
     <div class="card-title">Current Problem List</div>
     <div id="problems-empty" style="color:var(--text-secondary);font-size:0.88rem;">No problems yet.</div>
     <div class="problem-list" id="problems-display"></div>
@@ -430,6 +446,7 @@
   let teacherSecret = '';
   let currentProblems = []; // local working copy
   let selectedStudentId = null;
+  let selectedStudentName = '';
   let pidCounter = 1;
 
   // ── Auth ──────────────────────────────────────────────────────
@@ -495,8 +512,56 @@
     return `<div class="student-selector-row new-student${selectedStudentId === null ? ' active' : ''}" onclick="newStudent()">+ New Student</div>`;
   }
 
+  // ── Student card state helpers ────────────────────────────────
+  function showStudentPlaceholder() {
+    document.getElementById('student-placeholder').style.display = 'block';
+    document.getElementById('student-compact').style.display = 'none';
+    document.getElementById('student-form').style.display = 'none';
+  }
+
+  function showStudentCompact() {
+    document.getElementById('compact-name').textContent = selectedStudentName || selectedStudentId;
+    document.getElementById('compact-id').textContent = selectedStudentId;
+    document.getElementById('student-placeholder').style.display = 'none';
+    document.getElementById('student-compact').style.display = 'block';
+    document.getElementById('student-form').style.display = 'none';
+  }
+
+  function showStudentForm() {
+    document.getElementById('student-placeholder').style.display = 'none';
+    document.getElementById('student-compact').style.display = 'none';
+    document.getElementById('student-form').style.display = 'block';
+  }
+
+  function showEditForm() {
+    document.getElementById('cancel-edit-btn').style.display = '';
+    showStudentForm();
+  }
+
+  function cancelEdit() {
+    if (selectedStudentId) {
+      document.getElementById('student-id').value = selectedStudentId;
+      document.getElementById('student-name').value = selectedStudentName;
+      showStudentCompact();
+    } else {
+      showStudentPlaceholder();
+    }
+  }
+
+  function showDownstreamCards() {
+    document.getElementById('add-problem-card').style.display = 'block';
+    document.getElementById('problem-list-card').style.display = 'block';
+  }
+
+  function hideDownstreamCards() {
+    document.getElementById('add-problem-card').style.display = 'none';
+    document.getElementById('problem-list-card').style.display = 'none';
+    document.getElementById('dashboard-card').style.display = 'none';
+  }
+
   async function selectStudent(id, name) {
     selectedStudentId = id;
+    selectedStudentName = name;
     document.getElementById('student-id').value = id;
     document.getElementById('student-name').value = name;
     document.querySelectorAll('.student-selector-row').forEach(el => el.classList.remove('active'));
@@ -507,6 +572,7 @@
 
   function newStudent() {
     selectedStudentId = null;
+    selectedStudentName = '';
     document.getElementById('student-id').value = '';
     document.getElementById('student-name').value = '';
     currentProblems = [];
@@ -514,9 +580,10 @@
     updatePidField();
     renderProblems();
     document.getElementById('profile-status').style.display = 'none';
-    document.getElementById('load-status').style.display = 'none';
     document.getElementById('save-status').style.display = 'none';
-    document.getElementById('dashboard-card').style.display = 'none';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    showStudentForm();
+    hideDownstreamCards();
     document.querySelectorAll('.student-selector-row').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.student-selector-row.new-student').forEach(el => el.classList.add('active'));
     document.getElementById('student-id').focus();
@@ -525,28 +592,29 @@
   // ── Load existing student ──────────────────────────────────────
   async function loadStudent() {
     const id = document.getElementById('student-id').value.trim();
-    if (!id) { showStatus('load-status', 'err', 'Enter a student ID first.'); return; }
-
-    showStatus('load-status', 'ok', 'Loading…');
+    if (!id) return;
     try {
       const res = await fetch(`${WORKER}/student/${encodeURIComponent(id)}`);
       if (res.status === 404) {
-        showStatus('load-status', 'ok', 'No existing data — starting fresh.');
         currentProblems = [];
         renderProblems();
+        showStudentCompact();
+        showDownstreamCards();
         return;
       }
       if (!res.ok) throw new Error('Server error');
       const student = await res.json();
-      document.getElementById('student-name').value = student.name || '';
+      selectedStudentName = student.name || id;
+      document.getElementById('student-name').value = selectedStudentName;
       currentProblems = student.problems || [];
       pidCounter = nextPidFromList(currentProblems);
       updatePidField();
       renderProblems();
-      showStatus('load-status', 'ok', `Loaded ${currentProblems.length} problem(s).`);
+      showStudentCompact();
+      showDownstreamCards();
       updateDashboardLink(id);
     } catch {
-      showStatus('load-status', 'err', 'Failed to load. Check your connection.');
+      showToast('Failed to load student data. Check your connection.');
     }
   }
 
@@ -658,10 +726,13 @@
       }
       if (!res.ok) throw new Error('Server error');
 
-      showStatus('profile-status', 'ok', `Student "${name}" saved.`);
-      updateDashboardLink(id);
       selectedStudentId = id;
+      selectedStudentName = name;
+      showStudentCompact();
+      showDownstreamCards();
+      updateDashboardLink(id);
       loadStudentList();
+      showToast(`Student "${name}" saved.`);
     } catch {
       showStatus('profile-status', 'err', 'Save failed. Check your connection.');
     } finally {
