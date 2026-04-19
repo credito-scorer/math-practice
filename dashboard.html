@@ -258,7 +258,6 @@
 <script>
   const WORKER = 'https://math-practice-proxy.ronelalmanza20.workers.dev';
 
-  const VARIANT_TYPES = new Set(['Solve', 'Expand']);
   let currentStudentId = '';
 
   async function init() {
@@ -317,7 +316,7 @@
       const icon = p.completed ? '✅' : '🔵';
       const statusText = p.completed ? 'Completed' : 'Not started';
       const href = buildProblemUrl(p, studentId);
-      const canPractice = p.completed && VARIANT_TYPES.has(p.type);
+      const canPractice = !!p.completed;
       const expression = p.question || p.expression || p.title || '';
       const modulesJson = escHtml(JSON.stringify(p.modules || []));
       return `
@@ -327,10 +326,10 @@
             <div class="problem-info">
               <div class="problem-title">${escHtml(p.title)}</div>
               <div class="problem-status-text">${statusText}</div>
+              ${canPractice ? `<button class="practice-again-btn" data-expression="${escHtml(expression)}" data-type="${escHtml(p.type)}" data-modules="${modulesJson}" onclick="event.stopPropagation(); startPracticeAgain(this)">Practice again →</button>` : ''}
             </div>
             <div class="chevron">›</div>
           </a>
-          ${canPractice ? `<button class="practice-again-btn" data-expression="${escHtml(expression)}" data-type="${escHtml(p.type)}" data-modules="${modulesJson}" onclick="startPracticeAgain(this)">Practice again →</button>` : ''}
         </div>`;
     }).join('');
 
